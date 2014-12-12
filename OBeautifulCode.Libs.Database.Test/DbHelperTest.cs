@@ -276,7 +276,7 @@ namespace OBeautifulCode.Libs.Database.Test
         public void OpenConnection_UsingOleDbConnection_ReturnsOpenConnection()
         {
             // Arrange
-            string connectionString = string.Format("Provider=SQLNCLI11;Server={0};Database={1};Trusted_Connection=yes;User Id={2};Password={3};Timeout=600", Server, this.DatabaseName, UserId, Password);
+            string connectionString = string.Format("Provider=SQLNCLI11;Server={0};Database={1};Trusted_Connection=yes;User Id={2};Password={3};Timeout=3600", Server, this.DatabaseName, UserId, Password);
 
             // Act, Assert
             using (var connection = DbHelper.OpenConnection<OleDbConnection>(connectionString))
@@ -2210,7 +2210,7 @@ namespace OBeautifulCode.Libs.Database.Test
         /// </returns>
         private string BuildConnectionString(string databaseName)
         {
-            return string.Format(@"Server={0};Database={1};User ID={2};Password={3};Connection Timeout=600", Server, databaseName ?? "master", UserId, Password);
+            return string.Format(@"Server={0};Database={1};User ID={2};Password={3};Connection Timeout=3600", Server, databaseName ?? "master", UserId, Password);
         }
 
         #endregion
