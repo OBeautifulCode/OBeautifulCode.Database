@@ -103,6 +103,114 @@ namespace OBeautifulCode.Libs.Database.Test
         /// Test method.
         /// </summary>
         [Fact]
+        public static void CreateParameter_NameIsNull_ThrowsArgumentNullException()
+        {
+            // Arrange, Act, Assert
+            Assert.Throws<ArgumentNullException>(() => DbHelper.CreateParameter<SqlParameter>(null, DbType.String, "asdf"));
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_NameLessThanTwoCharactersInLength_ThrowsArgumentException()
+        {
+            // Arrange, Act, Assert
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>(string.Empty, DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("A", DbType.String, "asdf"));
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_NameDoesNotBeginWithAtSign_ThrowsArgumentException()
+        {
+            // Arrange, Act, Assert
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("AB", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("ABCDE", DbType.String, "asdf"));
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_NameIsNotAlphaNumeric_ThrowsArgumentException()
+        {
+            // Arrange, Act, Assert
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@*", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@Para Meter", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@     ", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@  \r\n   ", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@KDS12*#324KDFJLS", DbType.String, "asdf"));
+            Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@[][][", DbType.String, "asdf"));
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_StoresAllParametersPassedToConstructorInTheRightDbParameterProperty()
+        {
+            // Arrange
+            const string Name = "@MyParameter";
+            const DbType ParamDbType = DbType.Decimal;
+            object value = 54m;
+            const ParameterDirection ParamDirection = ParameterDirection.ReturnValue;
+            int? size = 10;
+            byte? precision = 5;
+            byte? scale = 3;
+            const bool IsNullable = true;
+
+            // Act
+            var parameter = (IDbDataParameter)DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, value, ParamDirection, size, precision, scale, IsNullable);
+
+            // Assert
+            Assert.Equal(Name, parameter.ParameterName);
+            Assert.Equal(ParamDbType, parameter.DbType);
+            Assert.Equal(value, parameter.Value);
+            Assert.Equal(ParamDirection, parameter.Direction);
+            Assert.Equal(size, parameter.Size);
+            Assert.Equal(precision, parameter.Precision);
+            Assert.Equal(scale, parameter.Scale);
+            Assert.Equal(IsNullable, parameter.IsNullable);            
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_ValueIsNull_StoresValueAsDbNull()
+        {
+            // Arrange
+            const string Name = "@MyParameter";
+            const DbType ParamDbType = DbType.Decimal;
+
+            // Act
+            var parameter = (IDbDataParameter)DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null);
+
+            // Assert
+            Assert.Equal(DBNull.Value, parameter.Value);            
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public static void CreateParameter_UseDefaultParameterValues_DoesNotThrow()
+        {
+            // Arrange
+            const string Name = "@MyParameter";
+            const DbType ParamDbType = DbType.Decimal;
+
+            // Act
+            Assert.DoesNotThrow(() => DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
         public void OpenConnection_ConnetionStringIsNull_ThrowsArgumentNullException()
         {
             // Arrange, Act, Assert
@@ -1984,7 +2092,7 @@ namespace OBeautifulCode.Libs.Database.Test
             sqlCommand = "\r\nGO\r\n\r\nGO";
             Assert.Throws<InvalidOperationException>(() => DbHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, sqlCommand));
         }
-
+        
         /// <summary>
         /// Dispose the instance.
         /// </summary>

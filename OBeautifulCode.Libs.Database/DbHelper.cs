@@ -922,22 +922,22 @@ namespace OBeautifulCode.Libs.Database
         /// </summary>
         /// <typeparam name="T">The type of <see cref="IDbDataParameter"/> to create.</typeparam>
         /// <param name="name">Specifies the parameter name.</param>
-        /// <param name="direction">Specifies the parameter direction.</param>
         /// <param name="type">Specifies the parameter provider-(in)dependent type.</param>
+        /// <param name="value">Specifies the parameter value.</param>
+        /// <param name="direction">Specifies the parameter direction.</param>
         /// <param name="size">Specifies the parameter size.</param>
         /// <param name="precision">Specifies the parameter precision.</param>
         /// <param name="scale">Specifies the parameter scale.</param>
-        /// <param name="nullable">Specifies the parameter as nullable or not.</param>        
-        /// <param name="value">Specifies the parameter value.</param>
+        /// <param name="nullable">Specifies the parameter as nullable or not.</param>
         /// <returns>The data parameter with the specified properties set.</returns>
         /// <exception cref="ArgumentNullException">name is null.</exception>
         /// <exception cref="ArgumentException">Parameter name is not 2 characters in length at a minimum.</exception>
         /// <exception cref="ArgumentException">Parameter name does not being with '@'.</exception>
         /// <exception cref="ArgumentException">Parameter name is not alphanumeric.</exception>
-        public static T CreateParameter<T>(string name, ParameterDirection direction, DbType type, int? size, byte? precision, byte? scale, bool nullable, object value) where T : IDbDataParameter, new()
+        public static T CreateParameter<T>(string name, DbType type, object value, ParameterDirection direction = ParameterDirection.Input, int? size = null, byte? precision = null, byte? scale = null, bool nullable = false) where T : IDbDataParameter, new()
         {
             // check parameters
-            Condition.Requires(name, "name").IsNotNull();
+            Condition.Requires(name, "name").IsNotNullOrWhiteSpace();
             if (name.Length < 2)
             {
                 throw new ArgumentException("Parameter name is not 2 characters in length at a minimum.");
@@ -983,7 +983,7 @@ namespace OBeautifulCode.Libs.Database
                 pi.SetValue(parameter, nullable, null);
             }
 
-            parameter.Value = value;
+            parameter.Value = value ?? DBNull.Value;
 
             return parameter;
         }
