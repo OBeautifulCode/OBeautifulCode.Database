@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="SqlBatchStatementSplitter.cs" company="CoMetrics">
-//   Copyright 2014 CoMetrics
+// <copyright file="SqlBatchStatementSplitter.cs" company="OBeautifulCode">
+//   Copyright 2014 OBeautifulCode
 // </copyright>
 // <summary>
 //   Splits an sql batch statement into individual statements.

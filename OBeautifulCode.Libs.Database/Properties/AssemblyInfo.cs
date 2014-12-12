@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="AssemblyInfo.cs" company="CoMetrics">
-//   Copyright 2014 CoMetrics
+// <copyright file="AssemblyInfo.cs" company="OBeautifulCode">
+//   Copyright 2014 OBeautifulCode
 // </copyright>
 // <summary>
 //   Assembly information.
