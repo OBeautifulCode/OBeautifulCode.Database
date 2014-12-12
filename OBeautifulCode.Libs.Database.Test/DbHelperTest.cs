@@ -86,6 +86,7 @@ namespace OBeautifulCode.Libs.Database.Test
 
         #region Public Methods
         // ReSharper disable InconsistentNaming
+        // ReSharper disable CoVariantArrayConversion        
 
         /// <summary>
         /// Test method.
@@ -804,8 +805,8 @@ namespace OBeautifulCode.Libs.Database.Test
             const string SqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
             using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DbHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter }));
+                var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };                
+                actualException = Assert.Throws<SqlException>(() => DbHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter }));                
                 Assert.Equal("Must declare the scalar variable \"@symbol\".", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1797,7 +1798,7 @@ namespace OBeautifulCode.Libs.Database.Test
 
             // UnauthorizedAccessException & SecurityException - no good way to test this
             // Non-query
-            Assert.Throws<InvalidOperationException>(() => DbHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Update [DbHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath, true));
+            Assert.Throws<InvalidOperationException>(() => DbHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Update [DbHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
 
             // no results - just headers are printed
             DbHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [DbHelper] Where [Csv,Test] = 'bla'", tempFilePath);
@@ -1834,7 +1835,7 @@ namespace OBeautifulCode.Libs.Database.Test
             DbHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DbHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
             Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
 
-            // todo: test char and char[] field types for csv-treatment
+            // need to test char and char[] field types for csv-treatment
         }
 
         /// <summary>
@@ -2006,6 +2007,7 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
+        // ReSharper restore CoVariantArrayConversion
         // ReSharper restore InconsistentNaming
         #endregion
 
