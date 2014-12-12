@@ -13,7 +13,6 @@ namespace OBeautifulCode.Libs.Database
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Data;
-    using System.Data.Common;
     using System.Data.SqlClient;
     using System.Globalization;
     using System.IO;
@@ -54,7 +53,7 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="connectionString">String used to open a connection to the database.</param>
         /// <returns>Returns an open connection of the specified <see cref="IDbConnection"/> type.</returns>
         /// <exception cref="ArgumentNullException">connectionString is null.</exception>
-        /// <exception cref="ArgumentNullException">connectionString is whitespace.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         public static T OpenConnection<T>(string connectionString) where T : class, IDbConnection, new()
@@ -98,11 +97,12 @@ namespace OBeautifulCode.Libs.Database
         /// <returns>Returns the constructed <see cref="IDbCommand"/>.</returns>
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>        
+        /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
         public static IDbCommand BuildCommand(IDbConnection connection, string commandText, IEnumerable<IDataParameter> commandParameters = null, CommandType commandType = CommandType.Text, IDbTransaction transaction = null, bool prepareCommand = false, int timeoutSeconds = 0)
         {
             // check arguments
@@ -199,15 +199,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From this method:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -237,18 +234,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
         /// <returns>Returns an <see cref="IDataReader"/>.</returns>
-        /// From OpenDBConnection:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -276,15 +271,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From this method:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -309,18 +301,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
         /// <returns>Returns the number of rows affected.</returns>
-        /// From OpenDBConnection:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteNonQuery:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteNonQuery:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -349,15 +339,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand via ExecuteReader:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -387,18 +374,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
         /// <returns>Returns true if the command results in one or more rows of data.  Returns false if not.</returns>
-        /// From OpenDBConnection via ExecuteReader:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -426,15 +411,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand via ExecuteReader:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -466,18 +448,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
         /// <returns>Returns a <see cref="Collection{T}"/> where each item corresponds to a value in the result of the query.</returns>
-        /// From OpenDBConnection via ExecuteReader:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -507,15 +487,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand via ExecuteReader:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -548,18 +525,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="commandType">Determines how the command text is to be interpreted.</param>
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
-        /// From OpenDBConnection via ExecuteReader:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -683,15 +658,12 @@ namespace OBeautifulCode.Libs.Database
         /// From BuildCommand via ExecuteReader:
         /// <exception cref="ArgumentNullException">connection is null.</exception>
         /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -724,18 +696,16 @@ namespace OBeautifulCode.Libs.Database
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
         /// <returns>Returns a dictionary where the keys are column names and values are the values of the single row returned by the query.</returns>
-        /// From OpenDBConnection via ExecuteReader:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -761,24 +731,22 @@ namespace OBeautifulCode.Libs.Database
         /// </remarks>
         /// <param name="connectionString">String used to open a connection to the database.</param>
         /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
-        /// <param name="includeColumnNames">Indicates whether the first row should be populated with column names.</param>
         /// <param name="outputFilePath">Path to file where CSV data should be written.</param>
+        /// <param name="includeColumnNames">Indicates whether the first row should be populated with column names.</param>
         /// <param name="commandParameters">A set of parameters to associate with the command.</param>
         /// <param name="commandType">Determines how the command text is to be interpreted.</param>
         /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
         /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
-        /// From OpenDBConnection via ExecuteReader:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteReader:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
-        /// <exception cref="ArgumentException">The <see cref="SqlParameter"/> is already contained by another <see cref="SqlParameterCollection"/>.</exception>
         /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all parameters to have an explicitly set type.</exception>
-        /// <exception cref="InvalidOperationException">SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.</exception>
-        /// <exception cref="InvalidOperationException">Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.</exception>
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
@@ -790,7 +758,7 @@ namespace OBeautifulCode.Libs.Database
         /// <exception cref="UnauthorizedAccessException">Access is denied to outputFilePath.</exception>
         /// <exception cref="SecurityException">the caller does not have the required permission to write to outputFilePath.</exception>
         /// <exception cref="InvalidOperationException">a result set wasn't found when executing the command.  Command is a non-query.</exception>
-        public static void WriteToCsv<T>(string connectionString, string commandText, bool includeColumnNames, string outputFilePath, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, bool prepareCommand = false, int timeoutSeconds = 0) where T : class, IDbConnection, new()
+        public static void WriteToCsv<T>(string connectionString, string commandText, string outputFilePath, bool includeColumnNames = true, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, bool prepareCommand = false, int timeoutSeconds = 0) where T : class, IDbConnection, new()
         {
             Condition.Requires(outputFilePath, "outputFilePath").IsNotNullOrWhiteSpace();
             using (var writer = new StreamWriter(outputFilePath))
@@ -889,7 +857,7 @@ namespace OBeautifulCode.Libs.Database
         /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
         /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
-        /// From BuildCommand:
+        /// From ExecuteNonQuery:
         /// <exception cref="SqlException">An exception occurred while executing a command in the batch or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
         /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
@@ -922,13 +890,13 @@ namespace OBeautifulCode.Libs.Database
         /// All commands in the batch are expected to be Text commands.
         /// </remarks>
         /// <returns>Returns the total number of rows affected.</returns>
-        /// From OpenDBConnection via ExecuteNonQuery:
-        /// <exception cref="ArgumentException">connectionString is null or whitespace.</exception>
+        /// From OpenConnection via ExecuteNonQuery:
+        /// <exception cref="ArgumentNullException">connectionString is null.</exception>
+        /// <exception cref="ArgumentException">connectionString is whitespace.</exception>
         /// <exception cref="ArgumentException">connectionString isn't formatted properly.</exception>
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         /// From BuildCommand via ExecuteNonQuery:
-        /// <exception cref="ArgumentException">commandText is null or whitespace.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>        
+        /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
         /// From ExecuteNonQuery:
         /// <exception cref="SqlException">An exception occurred while executing a command in the batch or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>

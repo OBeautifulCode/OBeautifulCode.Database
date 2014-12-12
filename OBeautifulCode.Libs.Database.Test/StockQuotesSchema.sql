@@ -9,7 +9,7 @@
 
 /*********************************** Table *************************************/
 
-Create Table [StockQuotes]
+Create Table [dbo].[StockQuotes]
   (
      [Symbol]       [nvarchar](15)  Not Null,
      [Date]         [datetime]      Not Null,
@@ -21,21 +21,13 @@ Create Table [StockQuotes]
      [OpenInterest] [decimal](9,3)  Null     
   )
 
-Go
-
 /********************************** Indices ************************************/
 
 Create NonClustered Index [IX_StockQuotes_Symbol]
   On [StockQuotes] ( [Symbol] Asc )  
 
-Go
-
 Create NonClustered Index [IX_StockQuotes_Date]
   On [StockQuotes] ( [Date] Asc )
 
-Go
-
 Create Unique NonClustered Index [IX_StockQuotes_SymbolDate]
   On [StockQuotes] ( [Symbol] Asc, [Date] Asc )
-
-Go

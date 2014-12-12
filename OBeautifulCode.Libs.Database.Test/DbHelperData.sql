@@ -1,0 +1,1 @@
+﻿Insert Into DbHelper ([Date],[Value],[Csv,Test]) Values ('1/1/2004',4.5,'testing123')
