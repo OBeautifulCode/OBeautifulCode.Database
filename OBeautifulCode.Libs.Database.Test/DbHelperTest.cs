@@ -28,6 +28,12 @@ namespace OBeautifulCode.Libs.Database.Test
     /// <summary>
     /// Tests the <see cref="DbHelper"/> class.
     /// </summary>
+    /// <remarks>
+    /// This class was ported from an older library that used a poor style of unit testing.
+    /// It had a few monolithic test methods instead of many smaller, single purpose methods.
+    /// Because of the volume of test code, I was only able to break-up a few of these monolithic tests.
+    /// The rest remain as-is.
+    /// </remarks>
     public class DbHelperTest : IDisposable
     {
         #region Fields (Private)
