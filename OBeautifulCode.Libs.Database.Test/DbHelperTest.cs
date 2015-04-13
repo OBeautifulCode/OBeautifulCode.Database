@@ -1891,7 +1891,7 @@ namespace OBeautifulCode.Libs.Database.Test
         /// Test method.
         /// </summary>
         [Fact]
-        public void WriteToCsv_MonolithicTest()
+        public void WriteToCsv_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
@@ -1948,6 +1948,104 @@ namespace OBeautifulCode.Libs.Database.Test
 
             DbHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DbHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
             Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
+
+            // need to test char and char[] field types for csv-treatment
+        }
+
+        /// <summary>
+        /// Test method.
+        /// </summary>
+        [Fact]
+        public void WriteToCsv_IDbConnectionProvided_MonolithicTest()
+        {
+            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions from OpenConnection via ExecuteReader
+            // not testing: all exceptions generated from ExecuteReader with connection
+
+            // null or whitespace outputFilePath
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                Assert.Throws<ArgumentNullException>(() => DbHelper.WriteToCsv(sqlConnection, "Select * From [Test]", null));
+                Assert.Throws<ArgumentException>(() => DbHelper.WriteToCsv(sqlConnection, "Select * From [Test]", string.Empty));
+                Assert.Throws<ArgumentException>(() => DbHelper.WriteToCsv(sqlConnection, "Select * From [Test]", "   "));
+                Assert.Throws<ArgumentException>(() => DbHelper.WriteToCsv(sqlConnection, "Select * From [Test]", "  \r\n   "));
+            }
+
+            // IOException
+            string tempFilePath = Path.GetTempFileName();
+            using (new FileStream(tempFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                {
+                    Assert.Throws<IOException>(() => DbHelper.WriteToCsv(sqlConnection, "Select * From [Test]", tempFilePath));
+                }
+            }
+
+            // UnauthorizedAccessException & SecurityException - no good way to test this
+            // Non-query
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                Assert.Throws<InvalidOperationException>(() => DbHelper.WriteToCsv(sqlConnection, "Update [DbHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
+            }
+
+            // no results - just headers are printed
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                DbHelper.WriteToCsv(sqlConnection, "Select * From [DbHelper] Where [Csv,Test] = 'bla'", tempFilePath);
+                Assert.Equal("Id,Date,Value,\"Csv,Test\"", File.ReadAllText(tempFilePath), StringComparer.CurrentCulture);
+            }
+
+            // header + one row
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                if (!DbHelper.CommandHasRows(sqlConnection, "Select * From [DbHelper] Where [Csv,Test] = 'writetocsvtest1'"))
+                {
+                    DbHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DbHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
+                }
+            }
+
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                DbHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] FROM [DbHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
+            }
+
+            // header + one row with csv-treatment
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                if (!DbHelper.CommandHasRows(sqlConnection, "Select * From [DbHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
+                {
+                    DbHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DbHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
+                }
+            }
+
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                DbHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DbHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+            }
+
+            // header + two rows
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                DbHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DbHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+            }
+
+            // header + three rows
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                if (!DbHelper.CommandHasRows(sqlConnection, "Select * From [DbHelper] Where [Csv,Test] = 'writetocsvtest3'"))
+                {
+                    DbHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DbHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
+                }
+            }
+
+            using (var sqlConnection = DbHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            {
+                DbHelper.WriteToCsv(sqlConnection, "Select [Csv,Test],[Date],[Value] FROM [DbHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
+                Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
+            }
 
             // need to test char and char[] field types for csv-treatment
         }
