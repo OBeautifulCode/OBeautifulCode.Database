@@ -725,6 +725,55 @@ namespace OBeautifulCode.Libs.Database
         /// <summary>
         /// Writes a result set to a CSV file.
         /// </summary>
+        /// <remarks>
+        /// Sets CommandBehavior = CommandBehavior.CloseConnection so that the created connection is closed when the data reader is closed.
+        /// </remarks>
+        /// <param name="connection">An <see cref="IDbConnection"/> that represents the connection to a database.</param>
+        /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
+        /// <param name="outputFilePath">Path to file where CSV data should be written.</param>
+        /// <param name="includeColumnNames">Indicates whether the first row should be populated with column names.</param>
+        /// <param name="commandParameters">A set of parameters to associate with the command.</param>
+        /// <param name="commandType">Determines how the command text is to be interpreted.</param>
+        /// <param name="transaction">The transaction within which the command will execute.</param>
+        /// <param name="prepareCommand">If true, creates a prepared (or compiled) version of the command on the data source.</param>
+        /// <param name="timeoutSeconds">The wait time, in seconds, before terminating an attempt to execute the command and generating an error.</param>
+        /// From BuildCommand via ExecuteReader:
+        /// <exception cref="ArgumentNullException">connection is null.</exception>
+        /// <exception cref="ArgumentException">connection is in an invalid state (must be Open).</exception>
+        /// <exception cref="ArgumentNullException">commandText is null.</exception>
+        /// <exception cref="ArgumentException">commandText is whitespace.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">timeoutSeconds is less than 0.</exception>
+        /// <exception cref="ArgumentException">transaction is invalid (has been rolled back or committed).</exception>
+        /// <exception cref="ArgumentException">transaction is using a different connection than the specified connection.</exception>
+        /// <exception cref="InvalidOperationException">Attempting to set a parameter of a type that was designed for a data provider other than the provider represented by the specified connection.</exception>
+        /// From ExecuteReader:
+        /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
+        /// <exception cref="SqlException">A parameter is missing.</exception>
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
+        /// From this method:
+        /// <exception cref="ArgumentException">outputFilePath is null or whitespace.</exception>
+        /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
+        /// <exception cref="DirectoryNotFoundException">the specified path is invalid, such as being on an unmapped drive or not existing.</exception>
+        /// <exception cref="IOException">I/O error accessing outputFilePath such as when there's a lock on the path.</exception>
+        /// <exception cref="UnauthorizedAccessException">Access is denied to outputFilePath.</exception>
+        /// <exception cref="SecurityException">the caller does not have the required permission to write to outputFilePath.</exception>
+        /// <exception cref="InvalidOperationException">a result set wasn't found when executing the command.  Command is a non-query.</exception>
+        public static void WriteToCsv(IDbConnection connection, string commandText, string outputFilePath, bool includeColumnNames = true, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, IDbTransaction transaction = null, bool prepareCommand = false, int timeoutSeconds = 0)
+        {
+            Condition.Requires(outputFilePath, "outputFilePath").IsNotNullOrWhiteSpace();
+            using (var writer = new StreamWriter(outputFilePath))
+            {
+                using (IDataReader reader = ExecuteReader(connection, commandText, commandParameters, commandType, transaction, CommandBehavior.Default, prepareCommand, timeoutSeconds))
+                {
+                    WriteToCsv(reader, writer, includeColumnNames);
+                } // using SqlDataReader
+            } // using writer
+        }
+
+        /// <summary>
+        /// Writes a result set to a CSV file.
+        /// </summary>
         /// <typeparam name="T">The type of <see cref="IDbConnection"/> to open.  Must be a class.</typeparam>
         /// <remarks>
         /// Sets CommandBehavior = CommandBehavior.CloseConnection so that the created connection is closed when the data reader is closed.
@@ -765,76 +814,7 @@ namespace OBeautifulCode.Libs.Database
             {
                 using (IDataReader reader = ExecuteReader<T>(connectionString, commandText, commandParameters, commandType, CommandBehavior.CloseConnection, prepareCommand, timeoutSeconds))
                 {
-                    try
-                    {
-                        if (reader.FieldCount == 0)
-                        {
-                            throw new InvalidOperationException("A result set wasn't found when executing the command.  Command is a non-query.");
-                        }
-
-                        // write headers
-                        if (includeColumnNames)
-                        {
-                            var headers = new List<string>();
-                            for (int x = 0; x < reader.FieldCount; x++)
-                            {
-                                headers.Add(reader.GetName(x));
-                            }
-
-                            writer.Write(headers.ToCsv());
-                        }
-
-                        // write content
-                        while (reader.Read())
-                        {
-                            var rowValues = new List<string>();
-                            for (int x = 0; x < reader.FieldCount; x++)
-                            {
-                                if (reader.IsDBNull(x))
-                                {
-                                    rowValues.Add(null);
-                                }
-                                else
-                                {
-                                    object value = reader.GetValue(x);
-
-                                    // strings, chars, and char arrays need to be made CSV-safe.  
-                                    // other datatypes are guaranteed to never violate CSV-safety rules.
-                                    var stringValue = value as string;
-                                    var charArrayValue = value as char[];
-                                    if (stringValue != null)
-                                    {
-                                        rowValues.Add(stringValue.ToCsvSafe());
-                                    }
-                                    else if (value is char)
-                                    {
-                                        rowValues.Add(value.ToString().ToCsvSafe());
-                                    }
-                                    else if (charArrayValue != null)
-                                    {
-                                        rowValues.Add(charArrayValue.Select(val => val.ToString(CultureInfo.InvariantCulture)).ToDelimitedString(string.Empty).ToCsvSafe());
-                                    }
-                                    else if (value is DateTime)
-                                    {
-                                        // DateTime.ToString() will truncate time.
-                                        rowValues.Add(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.fff"));
-                                    }
-                                    else
-                                    {
-                                        rowValues.Add(value.ToString());
-                                    }
-                                } // cell is null?
-                            } // for each column in the row
-                            writer.WriteLine();
-
-                            // since we already treated strings for CSV-safety, use ToDelimitedString() instead of ToCsv()
-                            writer.Write(rowValues.ToDelimitedString(","));
-                        } // while rows to read
-                    }
-                    finally
-                    {
-                        reader.Close();
-                    }
+                    WriteToCsv(reader, writer, includeColumnNames);
                 } // using SqlDataReader
             } // using writer
         }
@@ -1127,6 +1107,80 @@ namespace OBeautifulCode.Libs.Database
                 }
 
                 return result;
+            }
+            finally
+            {
+                reader.Close();
+            }
+        }
+
+        private static void WriteToCsv(IDataReader reader, StreamWriter writer, bool includeColumnNames)
+        {
+            try
+            {
+                if (reader.FieldCount == 0)
+                {
+                    throw new InvalidOperationException("A result set wasn't found when executing the command.  Command is a non-query.");
+                }
+
+                // write headers
+                if (includeColumnNames)
+                {
+                    var headers = new List<string>();
+                    for (int x = 0; x < reader.FieldCount; x++)
+                    {
+                        headers.Add(reader.GetName(x));
+                    }
+
+                    writer.Write(headers.ToCsv());
+                }
+
+                // write content
+                while (reader.Read())
+                {
+                    var rowValues = new List<string>();
+                    for (int x = 0; x < reader.FieldCount; x++)
+                    {
+                        if (reader.IsDBNull(x))
+                        {
+                            rowValues.Add(null);
+                        }
+                        else
+                        {
+                            object value = reader.GetValue(x);
+
+                            // strings, chars, and char arrays need to be made CSV-safe.  
+                            // other datatypes are guaranteed to never violate CSV-safety rules.
+                            var stringValue = value as string;
+                            var charArrayValue = value as char[];
+                            if (stringValue != null)
+                            {
+                                rowValues.Add(stringValue.ToCsvSafe());
+                            }
+                            else if (value is char)
+                            {
+                                rowValues.Add(value.ToString().ToCsvSafe());
+                            }
+                            else if (charArrayValue != null)
+                            {
+                                rowValues.Add(charArrayValue.Select(val => val.ToString(CultureInfo.InvariantCulture)).ToDelimitedString(string.Empty).ToCsvSafe());
+                            }
+                            else if (value is DateTime)
+                            {
+                                // DateTime.ToString() will truncate time.
+                                rowValues.Add(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                            }
+                            else
+                            {
+                                rowValues.Add(value.ToString());
+                            }
+                        } // cell is null?
+                    } // for each column in the row
+                    writer.WriteLine();
+
+                    // since we already treated strings for CSV-safety, use ToDelimitedString() instead of ToCsv()
+                    writer.Write(rowValues.ToDelimitedString(","));
+                } // while rows to read
             }
             finally
             {
