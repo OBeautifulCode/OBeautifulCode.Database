@@ -19,7 +19,7 @@ namespace OBeautifulCode.Database.Test
     using System.IO;
     using System.Transactions;
 
-    using OBeautifulCode.Libs.Reflection;
+    using OBeautifulCode.Reflection;
 
     using Xunit;
 

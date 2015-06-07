@@ -22,10 +22,10 @@ namespace OBeautifulCode.Database
     using System.Text;
     using System.Web;
 
-    using CuttingEdge.Conditions;
+    using Conditions;
 
-    using OBeautifulCode.Libs.Collections;
-    using OBeautifulCode.Libs.String;
+    using OBeautifulCode.Collection;
+    using OBeautifulCode.String;
 
     /// <summary>
     /// Provides various methods for interacting with a database.
