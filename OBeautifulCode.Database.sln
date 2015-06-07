@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OBeautifulCode.Libs.Database", "OBeautifulCode.Libs.Database\OBeautifulCode.Libs.Database.csproj", "{03F9AC6D-77AF-44D2-B675-06BC34824D2B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OBeautifulCode.Database", "OBeautifulCode.Database\OBeautifulCode.Database.csproj", "{03F9AC6D-77AF-44D2-B675-06BC34824D2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OBeautifulCode.Libs.Database.Test", "OBeautifulCode.Libs.Database.Test\OBeautifulCode.Libs.Database.Test.csproj", "{93799DD6-BC35-48E2-8CE4-0EFA33A518E0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OBeautifulCode.Database.Test", "OBeautifulCode.Database.Test\OBeautifulCode.Database.Test.csproj", "{93799DD6-BC35-48E2-8CE4-0EFA33A518E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

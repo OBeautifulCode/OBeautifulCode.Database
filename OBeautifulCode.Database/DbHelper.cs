@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Libs.Database
+namespace OBeautifulCode.Database
 {
     using System;
     using System.Collections.Generic;

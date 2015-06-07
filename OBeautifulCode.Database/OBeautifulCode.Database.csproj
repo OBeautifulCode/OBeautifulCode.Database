@@ -7,8 +7,8 @@
     <ProjectGuid>{03F9AC6D-77AF-44D2-B675-06BC34824D2B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OBeautifulCode.Libs.Database</RootNamespace>
-    <AssemblyName>OBeautifulCode.Libs.Database</AssemblyName>
+    <RootNamespace>OBeautifulCode.Database</RootNamespace>
+    <AssemblyName>OBeautifulCode.Database</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -21,7 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Debug\OBeautifulCode.Libs.Database.XML</DocumentationFile>
+    <DocumentationFile>bin\Debug\OBeautifulCode.Database.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,7 +31,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <DocumentationFile>bin\Release\OBeautifulCode.Libs.Database.XML</DocumentationFile>
+    <DocumentationFile>bin\Release\OBeautifulCode.Database.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CuttingEdge.Conditions">
