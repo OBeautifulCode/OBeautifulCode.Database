@@ -32,20 +32,6 @@ namespace OBeautifulCode.Database
     /// </summary>
     public static class DbHelper
     {
-        #region Fields (Private)
-
-        #endregion
-
-        #region Constructors
-
-        #endregion
-
-        #region Properties
-
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Opens an database connection using a Connection String.
         /// </summary>
@@ -968,18 +954,6 @@ namespace OBeautifulCode.Database
             return parameter;
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        #endregion
-
-        #region Protected Methods
-
-        #endregion
-
-        #region Private Methods
-
         /// <summary>
         /// Determines if an <see cref="IDataReader"/> has a row to read.
         /// </summary>
@@ -1187,7 +1161,5 @@ namespace OBeautifulCode.Database
                 reader.Close();
             }
         }
-
-        #endregion
     }
 }

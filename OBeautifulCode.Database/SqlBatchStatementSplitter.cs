@@ -22,24 +22,10 @@ namespace OBeautifulCode.Database
     /// </remarks>
     public class SqlBatchStatementSplitter
     {
-        #region Fields (Private)
-
         /// <summary>
         /// Regex pattern to split up an SQL statement
         /// </summary>
         private const string SqlStatementSeparatorRegexPattern = @"^\s*GO\s*$";
-
-        #endregion
-
-        #region Constructors
-
-        #endregion
-
-        #region Properties
-
-        #endregion
-
-        #region Public Methods
 
         /// <summary>
         /// Splits a batch SQL statement into individual statements.
@@ -50,19 +36,5 @@ namespace OBeautifulCode.Database
         {
             return Regex.Split(batchSql + "\n", SqlStatementSeparatorRegexPattern, RegexOptions.IgnoreCase | RegexOptions.Multiline).Where(statement => !string.IsNullOrWhiteSpace(statement));
         }
-        
-        #endregion
-
-        #region Internal Methods
-
-        #endregion
-
-        #region Protected Methods
-
-        #endregion
-
-        #region Private Methods
-
-        #endregion
     }
 }

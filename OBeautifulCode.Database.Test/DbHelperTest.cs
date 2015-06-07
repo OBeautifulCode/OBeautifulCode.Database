@@ -36,8 +36,6 @@ namespace OBeautifulCode.Database.Test
     /// </remarks>
     public class DbHelperTest : IDisposable
     {
-        #region Fields (Private)
-
         /// <summary>
         /// Appveyor SQL Server admin user id.
         /// </summary>
@@ -53,10 +51,6 @@ namespace OBeautifulCode.Database.Test
         /// </summary>
         private const string Server = @"(local)\SQL2014";
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DbHelperTest"/> class.
         /// </summary>
@@ -67,10 +61,6 @@ namespace OBeautifulCode.Database.Test
         {
             this.DatabaseName = this.CreatedSeededDatabase();
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the database connection string.
@@ -88,9 +78,6 @@ namespace OBeautifulCode.Database.Test
         /// </summary>
         private string DatabaseName { get; set; }
 
-        #endregion
-
-        #region Public Methods
         // ReSharper disable InconsistentNaming
         // ReSharper disable CoVariantArrayConversion        
 
@@ -2221,17 +2208,6 @@ namespace OBeautifulCode.Database.Test
 
         // ReSharper restore CoVariantArrayConversion
         // ReSharper restore InconsistentNaming
-        #endregion
-
-        #region Internal Methods
-
-        #endregion
-
-        #region Protected Methods
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Creates a database of stock quote data.
@@ -2309,8 +2285,6 @@ namespace OBeautifulCode.Database.Test
         private string BuildConnectionString(string databaseName)
         {
             return string.Format(@"Server={0};Database={1};User ID={2};Password={3};Connection Timeout=3600", Server, databaseName ?? "master", UserId, Password);
-        }
-
-        #endregion
+        }        
     }
 }
