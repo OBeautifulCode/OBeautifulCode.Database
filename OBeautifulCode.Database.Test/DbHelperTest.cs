@@ -169,7 +169,10 @@ namespace OBeautifulCode.Database.Test
             const DbType ParamDbType = DbType.Decimal;
 
             // Act
-            Assert.DoesNotThrow(() => DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
+            var ex = Record.Exception(() => DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
+
+            // Assert
+            Assert.Null(ex);
         }
 
         [Fact]
@@ -396,8 +399,11 @@ namespace OBeautifulCode.Database.Test
             var parameters = new IDataParameter[] { null, parameter, null, null };
             const string SqlStatement = "Select * From [StockQuotes] Where [Symbol] = @symbol";
 
-            // Act, Assert
-            Assert.DoesNotThrow(() => DbHelper.BuildCommand(connection, SqlStatement, parameters).Dispose());
+            // Act
+            var ex = Record.Exception(() => DbHelper.BuildCommand(connection, SqlStatement, parameters).Dispose());
+
+            // Assert
+            Assert.Null(ex);
 
             // Cleanup
             connection.Close();
