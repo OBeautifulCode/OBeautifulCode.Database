@@ -1,13 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DbHelper.cs" company="OBeautifulCode">
-//   Copyright 2014 OBeautifulCode
+//   Copyright 2015 OBeautifulCode
 // </copyright>
-// <summary>
-//   Provides various methods for interacting with a database.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Libs.Database
+namespace OBeautifulCode.Database
 {
     using System;
     using System.Collections.Generic;
@@ -22,30 +19,16 @@ namespace OBeautifulCode.Libs.Database
     using System.Text;
     using System.Web;
 
-    using CuttingEdge.Conditions;
+    using Conditions;
 
-    using OBeautifulCode.Libs.Collections;
-    using OBeautifulCode.Libs.String;
+    using OBeautifulCode.Collection;
+    using OBeautifulCode.String;
 
     /// <summary>
     /// Provides various methods for interacting with a database.
     /// </summary>
     public static class DbHelper
     {
-        #region Fields (Private)
-
-        #endregion
-
-        #region Constructors
-
-        #endregion
-
-        #region Properties
-
-        #endregion
-
-        #region Public Methods
-
         /// <summary>
         /// Opens an database connection using a Connection String.
         /// </summary>
@@ -968,18 +951,6 @@ namespace OBeautifulCode.Libs.Database
             return parameter;
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        #endregion
-
-        #region Protected Methods
-
-        #endregion
-
-        #region Private Methods
-
         /// <summary>
         /// Determines if an <see cref="IDataReader"/> has a row to read.
         /// </summary>
@@ -1187,7 +1158,5 @@ namespace OBeautifulCode.Libs.Database
                 reader.Close();
             }
         }
-
-        #endregion
     }
 }

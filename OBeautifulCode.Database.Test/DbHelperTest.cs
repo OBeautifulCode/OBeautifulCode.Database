@@ -1,13 +1,10 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DbHelperTest.cs" company="OBeautifulCode">
-//   Copyright 2014 OBeautifulCode
+//   Copyright 2015 OBeautifulCode
 // </copyright>
-// <summary>
-//   Tests the <see cref="DbHelper"/> class.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Libs.Database.Test
+namespace OBeautifulCode.Database.Test
 {
     using System;
     using System.Collections.Generic;
@@ -19,7 +16,7 @@ namespace OBeautifulCode.Libs.Database.Test
     using System.IO;
     using System.Transactions;
 
-    using OBeautifulCode.Libs.Reflection;
+    using OBeautifulCode.Reflection;
 
     using Xunit;
 
@@ -36,8 +33,6 @@ namespace OBeautifulCode.Libs.Database.Test
     /// </remarks>
     public class DbHelperTest : IDisposable
     {
-        #region Fields (Private)
-
         /// <summary>
         /// Appveyor SQL Server admin user id.
         /// </summary>
@@ -53,10 +48,6 @@ namespace OBeautifulCode.Libs.Database.Test
         /// </summary>
         private const string Server = @"(local)\SQL2014";
 
-        #endregion
-
-        #region Constructors
-
         /// <summary>
         /// Initializes a new instance of the <see cref="DbHelperTest"/> class.
         /// </summary>
@@ -67,10 +58,6 @@ namespace OBeautifulCode.Libs.Database.Test
         {
             this.DatabaseName = this.CreatedSeededDatabase();
         }
-
-        #endregion
-
-        #region Properties
 
         /// <summary>
         /// Gets the database connection string.
@@ -88,15 +75,8 @@ namespace OBeautifulCode.Libs.Database.Test
         /// </summary>
         private string DatabaseName { get; set; }
 
-        #endregion
-
-        #region Public Methods
         // ReSharper disable InconsistentNaming
         // ReSharper disable CoVariantArrayConversion        
-
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void ToBit_Returns1ForTrue0ForFalse()
         {
@@ -105,9 +85,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Equal("0", false.ToBit(), StringComparer.CurrentCulture);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_NameIsNull_ThrowsArgumentNullException()
         {
@@ -115,9 +92,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentNullException>(() => DbHelper.CreateParameter<SqlParameter>(null, DbType.String, "asdf"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_NameLessThanTwoCharactersInLength_ThrowsArgumentException()
         {
@@ -126,9 +100,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("A", DbType.String, "asdf"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_NameDoesNotBeginWithAtSign_ThrowsArgumentException()
         {
@@ -137,9 +108,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("ABCDE", DbType.String, "asdf"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_NameIsNotAlphaNumeric_ThrowsArgumentException()
         {
@@ -152,9 +120,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentException>(() => DbHelper.CreateParameter<SqlParameter>("@[][][", DbType.String, "asdf"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_StoresAllParametersPassedToConstructorInTheRightDbParameterProperty()
         {
@@ -182,9 +147,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Equal(IsNullable, parameter.IsNullable);            
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_ValueIsNull_StoresValueAsDbNull()
         {
@@ -199,9 +161,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Equal(DBNull.Value, parameter.Value);            
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public static void CreateParameter_UseDefaultParameterValues_DoesNotThrow()
         {
@@ -210,12 +169,12 @@ namespace OBeautifulCode.Libs.Database.Test
             const DbType ParamDbType = DbType.Decimal;
 
             // Act
-            Assert.DoesNotThrow(() => DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
+            var ex = Record.Exception(() => DbHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
+
+            // Assert
+            Assert.Null(ex);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_ConnetionStringIsNull_ThrowsArgumentNullException()
         {
@@ -223,9 +182,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentNullException>(() => DbHelper.OpenConnection<SqlConnection>(null));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_ConnetionStringIsWhitespace_ThrowsArgumentException()
         {
@@ -235,9 +191,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentException>(() => DbHelper.OpenConnection<SqlConnection>("  \r\n  "));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_ConnetionStringNotProperlyConstructed_ThrowsArgumentException()
         {
@@ -245,9 +198,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentException>(() => DbHelper.OpenConnection<SqlConnection>("connetionstring"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_ConnectionCannotBeEstablished_ThrowsSqlException()
         {
@@ -255,9 +205,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<SqlException>(() => DbHelper.OpenConnection<SqlConnection>("Data Source=DOESNTEXIST;Initial Catalog=StockQuotes;Integrated Security=SSPI;"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_ConnectionStringIsValidAndDatabaseIsAccessible_ReturnsOpenConnection()
         {
@@ -269,9 +216,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void OpenConnection_UsingOleDbConnection_ReturnsOpenConnection()
         {
@@ -286,9 +230,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ConnectionIsNull_ThrowsArgumentNullException()
         {
@@ -296,9 +237,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Throws<ArgumentNullException>(() => DbHelper.BuildCommand(null, "Select * From [Whatever]"));
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ConnectionIsNotOpen_ThrowsArgumentException()
         {
@@ -315,9 +253,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ConnectionIsDisposed_ThrowsArgumentException()
         {
@@ -331,9 +266,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Equal("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_CommandTextIsNull_ThrowsArgumentNullException()
         {
@@ -347,9 +279,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_CommandTextIsWhitespace_ThrowsArgumentException()
         {
@@ -365,9 +294,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_TimeoutIsLessThanZero_ThrowsArgumentOutOfRangeException()
         {
@@ -384,9 +310,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_TransactionIsInvalidBecauseItHasBeenRolledBack_ThrowsArgumentException()
         {
@@ -407,9 +330,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_TransactionIsInvalidBecauseItHasBeenComitted_ThrowsArgumentException()
         {
@@ -430,9 +350,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_TransactionUsesDifferentConnectionThenTheSpecifiedOne_ThrowsArgumentException()
         {
@@ -455,9 +372,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection2.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_UseParameterOfDifferentTypeThanOneSupportedByDataProvider_ThrowsInvalidOperationException()
         {
@@ -476,9 +390,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_SomeParametersAreNull_NullParametersAreIgnored()
         {
@@ -488,17 +399,17 @@ namespace OBeautifulCode.Libs.Database.Test
             var parameters = new IDataParameter[] { null, parameter, null, null };
             const string SqlStatement = "Select * From [StockQuotes] Where [Symbol] = @symbol";
 
-            // Act, Assert
-            Assert.DoesNotThrow(() => DbHelper.BuildCommand(connection, SqlStatement, parameters).Dispose());
+            // Act
+            var ex = Record.Exception(() => DbHelper.BuildCommand(connection, SqlStatement, parameters).Dispose());
+
+            // Assert
+            Assert.Null(ex);
 
             // Cleanup
             connection.Close();
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommand_ReturnsExpectedData()
         {
@@ -520,9 +431,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandAndPrepareCommandWithNoParameters_ReturnsExpectedData()
         {
@@ -544,9 +452,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandWithParameters_ReturnsExpectedData()
         {
@@ -571,9 +476,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandWithParametersAndPrepareCommand_ReturnsExpectedData()
         {
@@ -598,9 +500,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidStoredProcedure_ReturnsExpectedData()
         {
@@ -626,9 +525,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidStoredProcedureAndPrepareParameters_ReturnsExpectedData()
         {
@@ -654,17 +550,11 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact(Skip = "Haven't researched how to do a TableDirect query")]
         public void BuildCommand_ValidTableDirectQuery_ReturnsExpectedData()
         {
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandToInsertRowAndUseTransaction_ReturnsNumberOfRowsAffected()
         {
@@ -691,9 +581,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandToRetrieveInsertedRowAndUseTransactionForBoth_ReturnsExpectedData()
         {
@@ -728,9 +615,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_ValidTextCommandToInsertedRowUseTransactionAndThenRollback_InsertedRowIsRemovedFromDatabase()
         {
@@ -765,9 +649,6 @@ namespace OBeautifulCode.Libs.Database.Test
             connection.Dispose();
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void BuildCommand_MonolithicTest()
         {
@@ -897,9 +778,6 @@ namespace OBeautifulCode.Libs.Database.Test
             // }            
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteReader_ConnectionObjectProvided_MonolithicTest()
         {
@@ -996,9 +874,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteReader_ConnectionStringProvided_MonolithicTest()
         {
@@ -1045,9 +920,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteNonQuery_ConnectionObjectProvided_MonolithicTest()
         {
@@ -1141,9 +1013,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteNonQuery_ConnectionStringProvided_MonolithicTest()
         {
@@ -1191,9 +1060,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void CommandHasRows_ConnectionObjectProvided_MonolithicTest()
         {
@@ -1247,9 +1113,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void CommandHasRows_ConnectionStringProvided_MonolithicTest()
         {
@@ -1284,9 +1147,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.True(DbHelper.CommandHasRows<SqlConnection>(this.ConnectionString, SqlQueryNonParameterized, null, CommandType.Text, true));
         }
 
-        /// <summary>
-        /// Test method
-        /// </summary>
         [Fact]
         public void ReadSingleColumn_ConnectionObjectProvided_MonolithicTest()
         {
@@ -1396,9 +1256,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method
-        /// </summary>
         [Fact]
         public void ReadSingleColumn_ConnectionStringProvided_MonolithicTest()
         {
@@ -1477,9 +1334,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Null(values[2]);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ReadSingleValue_ConnectionObjectProvided_MonolithicTest()
         {
@@ -1572,9 +1426,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ReadSingleValue_ConnectionStringProvided_MonolithicTest()
         {
@@ -1631,9 +1482,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Null(value);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void RollbackTransaction_MonolithicTest()
         {
@@ -1664,9 +1512,6 @@ namespace OBeautifulCode.Libs.Database.Test
             // with an OperationFailedException
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ReadSingleRow_ConnectionObjectProvided_MonolithicTest()
         {
@@ -1798,9 +1643,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ReadSingleRow_ConnectionStringProvided_MonolithicTest()
         {
@@ -1887,9 +1729,6 @@ namespace OBeautifulCode.Libs.Database.Test
             Assert.Null(values["openinterest"]);
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void WriteToCsv_ConnectionStringProvided_MonolithicTest()
         {
@@ -1952,9 +1791,6 @@ namespace OBeautifulCode.Libs.Database.Test
             // need to test char and char[] field types for csv-treatment
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void WriteToCsv_IDbConnectionProvided_MonolithicTest()
         {
@@ -2050,9 +1886,6 @@ namespace OBeautifulCode.Libs.Database.Test
             // need to test char and char[] field types for csv-treatment
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteNonQueryBatch_ConnectionObjectProvided_MonolithicTest()
         {
@@ -2145,9 +1978,6 @@ namespace OBeautifulCode.Libs.Database.Test
             }
         }
 
-        /// <summary>
-        /// Test method.
-        /// </summary>
         [Fact]
         public void ExecuteNonQueryBatch_ConnectionStringProvided_MonolithicTest()
         {
@@ -2221,17 +2051,6 @@ namespace OBeautifulCode.Libs.Database.Test
 
         // ReSharper restore CoVariantArrayConversion
         // ReSharper restore InconsistentNaming
-        #endregion
-
-        #region Internal Methods
-
-        #endregion
-
-        #region Protected Methods
-
-        #endregion
-
-        #region Private Methods
 
         /// <summary>
         /// Creates a database of stock quote data.
@@ -2309,8 +2128,6 @@ namespace OBeautifulCode.Libs.Database.Test
         private string BuildConnectionString(string databaseName)
         {
             return string.Format(@"Server={0};Database={1};User ID={2};Password={3};Connection Timeout=3600", Server, databaseName ?? "master", UserId, Password);
-        }
-
-        #endregion
+        }        
     }
 }
