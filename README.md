@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/3dy4jvmn5htbxk1y?svg=true)](https://ci.appveyor.com/project/OBeautifulCode/obeautifulcode-libs-database)
+[![Build status](https://ci.appveyor.com/api/projects/status/xrkqyg27iuy4g1h7?svg=true)](https://ci.appveyor.com/project/SurajGupta/obeautifulcode-database)
 
 Database Helpers
 ================
