@@ -1,10 +1,7 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
 // <copyright file="DbHelperTest.cs" company="OBeautifulCode">
-//   Copyright 2014 OBeautifulCode
+//   Copyright 2015 OBeautifulCode
 // </copyright>
-// <summary>
-//   Tests the <see cref="DbHelper"/> class.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace OBeautifulCode.Database.Test
@@ -80,7 +77,6 @@ namespace OBeautifulCode.Database.Test
 
         // ReSharper disable InconsistentNaming
         // ReSharper disable CoVariantArrayConversion        
-
         [Fact]
         public static void ToBit_Returns1ForTrue0ForFalse()
         {
