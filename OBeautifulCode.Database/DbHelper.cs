@@ -1139,7 +1139,22 @@ namespace OBeautifulCode.Database
                             else if (value is DateTime)
                             {
                                 // DateTime.ToString() will truncate time.
-                                rowValues.Add(((DateTime)value).ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                                var valueAsDate = (DateTime)value;
+                                var dateAsString = string.Empty;
+                                if (valueAsDate.Kind == DateTimeKind.Unspecified)
+                                {
+                                    dateAsString = valueAsDate.ToString("yyyy-MM-dd HH:mm:ss.fff");
+                                }
+                                else if (valueAsDate.Kind == DateTimeKind.Local)
+                                {
+                                    dateAsString = valueAsDate.ToString("yyyy-MM-dd HH:mm:ss.fffzzz");
+                                }
+                                else if (valueAsDate.Kind == DateTimeKind.Utc)
+                                {
+                                    dateAsString = valueAsDate.ToString("yyyy-MM-dd HH:mm:ss.fffZ");
+                                }
+
+                                rowValues.Add(dateAsString);
                             }
                             else
                             {
