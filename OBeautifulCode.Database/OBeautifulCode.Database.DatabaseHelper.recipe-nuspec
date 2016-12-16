@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>OBeautifulCode.Database.DatabaseHelper</id>
+    <description>Provides various methods for interacting with a database.</description>
+    <tags>ado database sql mssql</tags>
+    <developmentDependency>true</developmentDependency>
+    <dependencies>
+      <dependency id="OBeautifulCode.Collection.EnumerableExtensions" version="1.0.10" />
+      <dependency id="OBeautifulCode.String.StringExtensions" version="1.0.14" />
+      <dependency id="Spritely.Recipes.MustValidation" version="0.6.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="DatabaseHelper.cs" target="content\net45\.OBeautifulCode.Recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
+    <file src="SqlBatchStatementSplitter.cs" target="content\net45\.OBeautifulCode.Recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
+  </files>
+</package>
