@@ -6,8 +6,8 @@
     <tags>ado database sql mssql</tags>
     <developmentDependency>true</developmentDependency>
     <dependencies>
-      <dependency id="OBeautifulCode.Collection.EnumerableExtensions" version="1.0.10" />
-      <dependency id="OBeautifulCode.String.StringExtensions" version="1.0.14" />
+      <dependency id="OBeautifulCode.Collection.EnumerableExtensions" version="1.0.14" />
+      <dependency id="OBeautifulCode.String.StringExtensions" version="1.0.15" />
       <dependency id="Spritely.Recipes.MustValidation" version="0.6.1" />
     </dependencies>
   </metadata>

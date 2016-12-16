@@ -33,7 +33,7 @@ namespace OBeautifulCode.Database
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Database", "See package version number")]
 #endif
-    public static class DatabaseHelper
+    internal static class DatabaseHelper
     {
         /// <summary>
         /// Opens an database connection using a Connection String.

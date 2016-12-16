@@ -25,7 +25,7 @@ namespace OBeautifulCode.Database
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Database", "See package version number")]
 #endif
-    public class SqlBatchStatementSplitter
+    internal class SqlBatchStatementSplitter
     {
         /// <summary>
         /// Regex pattern to split up an SQL statement
