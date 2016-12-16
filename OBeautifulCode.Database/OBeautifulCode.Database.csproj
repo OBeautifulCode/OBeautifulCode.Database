@@ -54,6 +54,8 @@
     <Compile Include="SqlBatchStatementSplitter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OBeautifulCode.Database.DatabaseHelper.recipe-nuspec" />
+    <None Include="OBeautifulCode.Database.template-nuspec" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

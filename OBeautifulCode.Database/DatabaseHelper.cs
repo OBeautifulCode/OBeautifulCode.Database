@@ -88,9 +88,9 @@ namespace OBeautifulCode.Database
         {
             // check arguments
             new { connection }.Must().NotBeNull().OrThrow();
-            new { connection.State }.Must().NotBeEqualTo(ConnectionState.Open).Because("connection is in an invalid state: " + connection.State + ".  Must be Open.").OrThrow();
+            new { connection.State }.Must().BeEqualTo(ConnectionState.Open).Because("connection is in an invalid state: " + connection.State + ".  Must be Open.").OrThrow();
             new { commandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
-            new { timeoutSeconds }.Must().BeGreaterThanOrEqualTo(1).OrThrow();
+            new { timeoutSeconds }.Must().BeGreaterThanOrEqualTo(0).OrThrow();
 
             // validate transaction
             if (transaction != null)

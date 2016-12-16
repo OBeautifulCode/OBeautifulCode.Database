@@ -46,7 +46,7 @@ namespace OBeautifulCode.Database.Test
         /// <summary>
         /// Appveyor SQL Server instance name.
         /// </summary>
-        private const string Server = @"(local)\SQL2014";
+        private const string Server = @"(local)\SQL2016";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseHelperTest"/> class.
@@ -76,7 +76,7 @@ namespace OBeautifulCode.Database.Test
         private string DatabaseName { get; set; }
 
         // ReSharper disable InconsistentNaming
-        // ReSharper disable CoVariantArrayConversion        
+        // ReSharper disable CoVariantArrayConversion
         [Fact]
         public static void ToBit_Returns1ForTrue0ForFalse()
         {
@@ -144,7 +144,7 @@ namespace OBeautifulCode.Database.Test
             Assert.Equal(size, parameter.Size);
             Assert.Equal(precision, parameter.Precision);
             Assert.Equal(scale, parameter.Scale);
-            Assert.Equal(IsNullable, parameter.IsNullable);            
+            Assert.Equal(IsNullable, parameter.IsNullable);
         }
 
         [Fact]
@@ -158,7 +158,7 @@ namespace OBeautifulCode.Database.Test
             var parameter = (IDbDataParameter)DatabaseHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null);
 
             // Assert
-            Assert.Equal(DBNull.Value, parameter.Value);            
+            Assert.Equal(DBNull.Value, parameter.Value);
         }
 
         [Fact]
@@ -305,7 +305,7 @@ namespace OBeautifulCode.Database.Test
             Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, null, false, -1));
             Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, null, false, int.MinValue));
 
-            // Cleanup            
+            // Cleanup
             connection.Close();
             connection.Dispose();
         }
@@ -324,7 +324,7 @@ namespace OBeautifulCode.Database.Test
             var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, transaction));
             Assert.Equal("transaction is invalid.", actualException.Message);
 
-            // Cleanup            
+            // Cleanup
             transaction.Dispose();
             connection.Close();
             connection.Dispose();
@@ -574,7 +574,7 @@ namespace OBeautifulCode.Database.Test
             // Assert
             Assert.Equal(1, actual);
 
-            // Cleanup            
+            // Cleanup
             transaction.Dispose();
             command.Dispose();
             connection.Close();
@@ -775,7 +775,7 @@ namespace OBeautifulCode.Database.Test
             //     {
             //         Assert.Throws<InvalidOperationException>( () => DatabaseHelper.BuildDataReader( connection , sqlQuery , 30 ) );
             //     }
-            // }            
+            // }
         }
 
         [Fact]
@@ -797,8 +797,8 @@ namespace OBeautifulCode.Database.Test
             const string SqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };                
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter }));                
+                var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter }));
                 Assert.Equal("Must declare the scalar variable \"@symbol\".", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1940,7 +1940,7 @@ namespace OBeautifulCode.Database.Test
                 sqlConnection.Close();
             }
 
-            // bad sqlCommand - second command 
+            // bad sqlCommand - second command
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
                 const string SqlCommand = "Insert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
@@ -2026,7 +2026,7 @@ namespace OBeautifulCode.Database.Test
             sqlCommand = "\r\nGO\r\n\r\nGO";
             Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, sqlCommand));
         }
-        
+
         /// <summary>
         /// Dispose the instance.
         /// </summary>
@@ -2128,6 +2128,6 @@ namespace OBeautifulCode.Database.Test
         private string BuildConnectionString(string databaseName)
         {
             return string.Format(@"Server={0};Database={1};User ID={2};Password={3};Connection Timeout=3600", Server, databaseName ?? "master", UserId, Password);
-        }        
+        }
     }
 }
