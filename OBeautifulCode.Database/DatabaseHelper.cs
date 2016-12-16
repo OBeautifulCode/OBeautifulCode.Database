@@ -1,5 +1,5 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DbHelper.cs" company="OBeautifulCode">
+// <copyright file="DatabaseHelper.cs" company="OBeautifulCode">
 //   Copyright 2015 OBeautifulCode
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
@@ -16,18 +16,16 @@ namespace OBeautifulCode.Database
     using System.Linq;
     using System.Reflection;
     using System.Security;
-    using System.Text;
-    using System.Web;
-
-    using Conditions;
 
     using OBeautifulCode.Collection;
     using OBeautifulCode.String;
 
+    using Spritely.Recipes;
+
     /// <summary>
     /// Provides various methods for interacting with a database.
     /// </summary>
-    public static class DbHelper
+    public static class DatabaseHelper
     {
         /// <summary>
         /// Opens an database connection using a Connection String.
@@ -41,7 +39,7 @@ namespace OBeautifulCode.Database
         /// <exception cref="SqlException">A connection-level error occurred while opening the connection. If the Number property contains the value 18487 or 18488, this indicates that the specified password has expired or must be reset.</exception>
         public static T OpenConnection<T>(string connectionString) where T : class, IDbConnection, new()
         {
-            Condition.Requires(connectionString, "connectionString").IsNotNullOrWhiteSpace();
+            new { connectionString }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
 
             T connection = null;
             try
@@ -49,8 +47,8 @@ namespace OBeautifulCode.Database
                 // an invalid connectionString will throw ArgumentException.
                 connection = new T { ConnectionString = connectionString };
 
-                // InvalidOperationException won't be thrown, even if data source or server aren't specified 
-                // in the connection string.  as long as the connection string is valid, 
+                // InvalidOperationException won't be thrown, even if data source or server aren't specified
+                // in the connection string.  as long as the connection string is valid,
                 // the only possible exception is SqlException
                 connection.Open();
             }
@@ -89,15 +87,11 @@ namespace OBeautifulCode.Database
         public static IDbCommand BuildCommand(IDbConnection connection, string commandText, IEnumerable<IDataParameter> commandParameters = null, CommandType commandType = CommandType.Text, IDbTransaction transaction = null, bool prepareCommand = false, int timeoutSeconds = 0)
         {
             // check arguments
-            Condition.Requires(connection, "connection").IsNotNull();
-            if (connection.State != ConnectionState.Open)
-            {
-                throw new ArgumentException("connection is in an invalid state: " + connection.State + ".  Must be Open.");
-            }
+            new { connection }.Must().NotBeNull().OrThrow();
+            new { connection.State }.Must().NotBeEqualTo(ConnectionState.Open).Because("connection is in an invalid state: " + connection.State + ".  Must be Open.").OrThrow();
+            new { commandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { timeoutSeconds }.Must().BeGreaterThanOrEqualTo(1).OrThrow();
 
-            Condition.Requires(commandText, "commandText").IsNotNullOrWhiteSpace();
-            Condition.Requires(timeoutSeconds, "timeoutSeconds").IsNotLessThan(0);
-            
             // validate transaction
             if (transaction != null)
             {
@@ -331,7 +325,7 @@ namespace OBeautifulCode.Database
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
-        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
         /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
         /// From this method:
         /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
@@ -371,7 +365,7 @@ namespace OBeautifulCode.Database
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
         /// From this method:
-        /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>       
+        /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
         public static bool CommandHasRows<T>(string connectionString, string commandText, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, bool prepareCommand = false, int timeoutSeconds = 0) where T : class, IDbConnection, new()
         {
             using (IDataReader reader = ExecuteReader<T>(connectionString, commandText, commandParameters, commandType, CommandBehavior.CloseConnection, prepareCommand, timeoutSeconds))
@@ -403,7 +397,7 @@ namespace OBeautifulCode.Database
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
-        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
         /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
         /// From this method:
         /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
@@ -479,7 +473,7 @@ namespace OBeautifulCode.Database
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
-        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
         /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
         /// From this method:
         /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
@@ -500,7 +494,7 @@ namespace OBeautifulCode.Database
         /// <typeparam name="T">The type of <see cref="IDbConnection"/> to open.  Must be a class.</typeparam>
         /// <remarks>
         /// Sets CommandBehavior = CommandBehavior.CloseConnection so that the created connection is closed when the data reader is closed.
-        /// </remarks>        
+        /// </remarks>
         /// <returns>Returns the resulting value.</returns>
         /// <param name="connectionString">String used to open a connection to the database.</param>
         /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
@@ -541,10 +535,10 @@ namespace OBeautifulCode.Database
         /// <exception cref="ArgumentNullException">transaction is null.</exception>
         /// <exception cref="ArgumentException">transaction is invalid.</exception>
         /// <exception cref="InvalidOperationException">trying to rollback a transaction that has already been committed or rolled back -or- the connection was broken.</exception>
-        /// <exception cref="InvalidOperationException">there's an issue rolling back the transaction.</exception>        
+        /// <exception cref="InvalidOperationException">there's an issue rolling back the transaction.</exception>
         public static void RollbackTransaction(SqlTransaction transaction)
         {
-            Condition.Requires(transaction, "transaction").IsNotNull();
+            new { transaction }.Must().NotBeNull().OrThrow();
 
             if (transaction.Connection == null)
             {
@@ -578,56 +572,6 @@ namespace OBeautifulCode.Database
         }
 
         /// <summary>
-        /// Creates an HTML table from an IDataReader
-        /// </summary>
-        /// <param name="reader">The IDataReader to convert to an HTML table.</param>
-        /// <param name="includeHeader">Indicates whether the header should appear in the HTML table.</param>
-        /// <param name="htmlEncodeCells">Indicates whether to HTML encode the contents of each sell.  Default is true.</param>
-        /// <returns>
-        /// Returns an HTML representation of the data pulled from the <see cref="IDataReader"/>.
-        /// </returns>
-        /// <exception cref="InvalidOperationException">reader is closed</exception>
-        public static string ToHtml(this IDataReader reader, bool includeHeader, bool htmlEncodeCells = true)
-        {
-            if (reader.IsClosed)
-            {
-                throw new InvalidOperationException("reader is closed.");
-            }
-
-            var html = new StringBuilder();
-            html.AppendLine("<table>");
-
-            if (includeHeader)
-            {
-                html.AppendLine("<tr>");
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    html.Append("<th>");
-                    html.Append(reader.GetName(i));
-                    html.AppendLine("</th>");
-                }
-
-                html.AppendLine("</tr>");
-            }
-
-            while (reader.Read())
-            {
-                html.AppendLine("<tr>");
-                for (int i = 0; i < reader.FieldCount; i++)
-                {
-                    html.Append("<td>");
-                    html.Append(htmlEncodeCells ? HttpUtility.HtmlEncode(reader[i].ToString()) : reader[i].ToString());
-                    html.AppendLine("</td>");
-                }
-
-                html.AppendLine("</tr>");
-            }
-
-            html.AppendLine("</table>");
-            return html.ToString();
-        }
-
-        /// <summary>
         /// Executes the command text against a connection and returns a single row of values.
         /// </summary>
         /// <param name="connection">An <see cref="IDbConnection"/> that represents the connection to a database.</param>
@@ -650,7 +594,7 @@ namespace OBeautifulCode.Database
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
-        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
         /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
         /// From this method:
         /// <exception cref="SqlException">If parameters specified, type mismatch between variable in command the value of named parameter.</exception>
@@ -732,7 +676,7 @@ namespace OBeautifulCode.Database
         /// From ExecuteReader:
         /// <exception cref="SqlException">An exception occurred while executing the command or there was a timeout.</exception>
         /// <exception cref="SqlException">A parameter is missing.</exception>
-        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>        
+        /// <exception cref="InvalidOperationException">Connection is pending a local transaction.</exception>
         /// <exception cref="InvalidOperationException">There is an open SqlDataReader associated with the connection.</exception>
         /// From this method:
         /// <exception cref="ArgumentException">outputFilePath is null or whitespace.</exception>
@@ -744,7 +688,8 @@ namespace OBeautifulCode.Database
         /// <exception cref="InvalidOperationException">a result set wasn't found when executing the command.  Command is a non-query.</exception>
         public static void WriteToCsv(IDbConnection connection, string commandText, string outputFilePath, bool includeColumnNames = true, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, IDbTransaction transaction = null, bool prepareCommand = false, int timeoutSeconds = 0)
         {
-            Condition.Requires(outputFilePath, "outputFilePath").IsNotNullOrWhiteSpace();
+            new { outputFilePath }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+
             using (var writer = new StreamWriter(outputFilePath))
             {
                 using (IDataReader reader = ExecuteReader(connection, commandText, commandParameters, commandType, transaction, CommandBehavior.Default, prepareCommand, timeoutSeconds))
@@ -792,7 +737,8 @@ namespace OBeautifulCode.Database
         /// <exception cref="InvalidOperationException">a result set wasn't found when executing the command.  Command is a non-query.</exception>
         public static void WriteToCsv<T>(string connectionString, string commandText, string outputFilePath, bool includeColumnNames = true, IDataParameter[] commandParameters = null, CommandType commandType = CommandType.Text, bool prepareCommand = false, int timeoutSeconds = 0) where T : class, IDbConnection, new()
         {
-            Condition.Requires(outputFilePath, "outputFilePath").IsNotNullOrWhiteSpace();
+            new { outputFilePath }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+
             using (var writer = new StreamWriter(outputFilePath))
             {
                 using (IDataReader reader = ExecuteReader<T>(connectionString, commandText, commandParameters, commandType, CommandBehavior.CloseConnection, prepareCommand, timeoutSeconds))
@@ -829,7 +775,8 @@ namespace OBeautifulCode.Database
         /// <exception cref="InvalidOperationException">no commands found in commandText.</exception>
         public static int ExecuteNonQueryBatch(IDbConnection connection, string batchCommandText, IDbTransaction transaction = null, int timeoutSeconds = 0)
         {
-            Condition.Requires(batchCommandText, "batchCommandText").IsNotNullOrWhiteSpace();
+            new { batchCommandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+
             IEnumerable<string> statements = SqlBatchStatementSplitter.SplitSqlAndRemoveEmptyStatements(batchCommandText);
             // ReSharper disable PossibleMultipleEnumeration
             if (!statements.Any())
@@ -868,7 +815,8 @@ namespace OBeautifulCode.Database
         /// <exception cref="InvalidOperationException">no commands found in commandText.</exception>
         public static int ExecuteNonQueryBatch<T>(string connectionString, string batchCommandText, int timeoutSeconds = 0) where T : class, IDbConnection, new()
         {
-            Condition.Requires(batchCommandText, "batchCommandText").IsNotNullOrWhiteSpace();
+            new { batchCommandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+
             IEnumerable<string> statements = SqlBatchStatementSplitter.SplitSqlAndRemoveEmptyStatements(batchCommandText);
             // ReSharper disable PossibleMultipleEnumeration
             if (!statements.Any())
@@ -900,7 +848,8 @@ namespace OBeautifulCode.Database
         public static T CreateParameter<T>(string name, DbType type, object value, ParameterDirection direction = ParameterDirection.Input, int? size = null, byte? precision = null, byte? scale = null, bool nullable = false) where T : IDbDataParameter, new()
         {
             // check parameters
-            Condition.Requires(name, "name").IsNotNullOrWhiteSpace();
+            new { name }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+
             if (name.Length < 2)
             {
                 throw new ArgumentException("Parameter name is not 2 characters in length at a minimum.");
@@ -1120,7 +1069,7 @@ namespace OBeautifulCode.Database
                         {
                             object value = reader.GetValue(x);
 
-                            // strings, chars, and char arrays need to be made CSV-safe.  
+                            // strings, chars, and char arrays need to be made CSV-safe.
                             // other datatypes are guaranteed to never violate CSV-safety rules.
                             var stringValue = value as string;
                             var charArrayValue = value as char[];
