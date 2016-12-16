@@ -688,8 +688,8 @@ namespace OBeautifulCode.Database.Test
             // valid command with ambient transaction - rollback
             DateTime now = DateTime.Now;
             SqlParameter dateParameter;
-            const string InsertSql = "Insert Into [DatabaseHelper] (Date, Value) Values (@Date, @Value)";
-            const string VerifyValueSql = "Select [Value] From [DatabaseHelper] Where Date = @Date";
+            const string InsertSql = "Insert Into [DBHelper] (Date, Value) Values (@Date, @Value)";
+            const string VerifyValueSql = "Select [Value] From [DBHelper] Where Date = @Date";
             using (new TransactionScope())
             {
                 using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
@@ -1751,41 +1751,41 @@ namespace OBeautifulCode.Database.Test
 
             // UnauthorizedAccessException & SecurityException - no good way to test this
             // Non-query
-            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Update [DatabaseHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
+            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Update [DBHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
 
             // no results - just headers are printed
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [DatabaseHelper] Where [Csv,Test] = 'bla'", tempFilePath);
+            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'bla'", tempFilePath);
             Assert.Equal("Id,Date,Value,\"Csv,Test\"", File.ReadAllText(tempFilePath), StringComparer.CurrentCulture);
 
             // header + one row
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1'"))
+            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
+                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] FROM [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
+            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
             Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
 
             // header + one row with csv-treatment
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
+            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
+                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DatabaseHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
             Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
 
             // header + two rows
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
             Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
 
             // header + three rows
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest3'"))
+            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
+                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
+            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
             Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
 
             // need to test char and char[] field types for csv-treatment
@@ -1821,65 +1821,65 @@ namespace OBeautifulCode.Database.Test
             // Non-query
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Update [DatabaseHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
+                Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Update [DBHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
             }
 
             // no results - just headers are printed
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [DatabaseHelper] Where [Csv,Test] = 'bla'", tempFilePath);
+                DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'bla'", tempFilePath);
                 Assert.Equal("Id,Date,Value,\"Csv,Test\"", File.ReadAllText(tempFilePath), StringComparer.CurrentCulture);
             }
 
             // header + one row
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1'"))
+                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
                 {
-                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
+                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
                 }
             }
 
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] FROM [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
+                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
                 Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
             }
 
             // header + one row with csv-treatment
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
+                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
                 {
-                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
+                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
                 }
             }
 
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DatabaseHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
                 Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
             }
 
             // header + two rows
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
                 Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
             }
 
             // header + three rows
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest3'"))
+                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
                 {
-                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DatabaseHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
+                    DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
                 }
             }
 
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Csv,Test],[Date],[Value] FROM [DatabaseHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
+                DatabaseHelper.WriteToCsv(sqlConnection, "Select [Csv,Test],[Date],[Value] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
                 Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
             }
 
@@ -1907,20 +1907,20 @@ namespace OBeautifulCode.Database.Test
             Exception actualException;
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                const string SqlCommand = "Insert Into [DatabaseHelper] ([Value]) Values (1.234)";
+                const string SqlCommand = "Insert Into [DBHelper] ([Value]) Values (1.234)";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, SqlCommand));
-                Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DatabaseHelper"), actualException.Message);
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DbHelper"), actualException.Message);
+                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // bad sqlCommand - first command
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                const string SqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)";
+                const string SqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
                 Assert.Equal("Could not find stored procedure 'asdfasdf'.", actualException.Message);
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
@@ -1929,43 +1929,43 @@ namespace OBeautifulCode.Database.Test
             {
                 using (var sqlTransaction = sqlConnection.BeginTransaction())
                 {
-                    const string SqlCommand = "Insert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
+                    const string SqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
                     actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp), sqlTransaction));
                     Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-                    Assert.True(DatabaseHelper.CommandHasRows(sqlConnection, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp), null, CommandType.Text, sqlTransaction));
+                    Assert.True(DatabaseHelper.CommandHasRows(sqlConnection, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp), null, CommandType.Text, sqlTransaction));
                     sqlTransaction.Rollback();
                 }
 
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // bad sqlCommand - second command
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                const string SqlCommand = "Insert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
+                const string SqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
                 Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-                Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // good sqlCommand - batch contains only one statement
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                const string SqlCommand = "Update [DatabaseHelper] Set [Value] = 5 Where [Date]='{0}'";
+                const string SqlCommand = "Update [DBHelper] Set [Value] = 5 Where [Date]='{0}'";
                 Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // good sqlCommand with multiple statements
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
-                const string SqlCommand = "Update [DatabaseHelper] Set [Value] = 4 Where [Date]='{0}'\r\nGO\r\nUpdate [DatabaseHelper] Set [Csv,Test] = 'whatever' Where [Date]='{0}'\r\nGO\r\n";
+                const string SqlCommand = "Update [DBHelper] Set [Value] = 4 Where [Date]='{0}'\r\nGO\r\nUpdate [DBHelper] Set [Csv,Test] = 'whatever' Where [Date]='{0}'\r\nGO\r\n";
                 Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
-                Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
@@ -1994,33 +1994,33 @@ namespace OBeautifulCode.Database.Test
             string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff", CultureInfo.CurrentCulture);
 
             // bad sqlCommand (date missing) - single command
-            string sqlCommand = "Insert Into [DatabaseHelper] ([Value]) Values (1.234)";
+            string sqlCommand = "Insert Into [DBHelper] ([Value]) Values (1.234)";
             Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, sqlCommand, 30));
-            Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DatabaseHelper"), actualException.Message);
-            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DbHelper"), actualException.Message);
+            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // bad sqlCommand - first command
-            sqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)";
+            sqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)";
             actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
             Assert.Equal("Could not find stored procedure 'asdfasdf'.", actualException.Message);
-            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // bad sqlCommand - second command
-            sqlCommand = "Insert Into [DatabaseHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
+            sqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
             actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
             Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-            Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // good sqlCommand - batch contains only one statement
-            sqlCommand = "UPDATE [DatabaseHelper] Set [Value] =5 WHERE [Date]='{0}'";
+            sqlCommand = "UPDATE [DBHelper] Set [Value] =5 WHERE [Date]='{0}'";
             Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // good sqlCommand with multiple statements
-            sqlCommand = "UPDATE [DatabaseHelper] Set [Value] = 4 WHERE [Date]='{0}'\r\nGO\r\nUPDATE [DatabaseHelper] Set [Csv,Test] = 'whatever' WHERE [Date]='{0}'\r\nGO\r\n";
+            sqlCommand = "UPDATE [DBHelper] Set [Value] = 4 WHERE [Date]='{0}'\r\nGO\r\nUPDATE [DBHelper] Set [Csv,Test] = 'whatever' WHERE [Date]='{0}'\r\nGO\r\n";
             Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
-            Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DatabaseHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // empty batch, nothing happens.
             sqlCommand = "\r\nGO\r\n\r\nGO";
@@ -2075,11 +2075,11 @@ namespace OBeautifulCode.Database.Test
             }
 
             // prepare all the SQL statements.
-            string quotesSchemaSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesSchema.sql", true);
-            string quotesStoredProcSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesStoredProcs.sql", true);
-            string quotesDataSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesData.sql", true);
-            string helperSchemaSql = AssemblyHelper.ReadEmbeddedResourceAsString("DbHelperSchema.sql", true);
-            string helperDataSql = AssemblyHelper.ReadEmbeddedResourceAsString("DbHelperData.sql", true);
+            string quotesSchemaSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesSchema.sql");
+            string quotesStoredProcSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesStoredProcs.sql");
+            string quotesDataSql = AssemblyHelper.ReadEmbeddedResourceAsString("StockQuotesData.sql");
+            string helperSchemaSql = AssemblyHelper.ReadEmbeddedResourceAsString("DbHelperSchema.sql");
+            string helperDataSql = AssemblyHelper.ReadEmbeddedResourceAsString("DbHelperData.sql");
             var allSqlStatements = new List<string> { quotesSchemaSql, quotesStoredProcSql, quotesDataSql, helperSchemaSql, helperDataSql };
 
             // import schema and data
