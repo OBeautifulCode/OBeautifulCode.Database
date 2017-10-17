@@ -7,7 +7,7 @@
 // </auto-generated>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Database
+namespace OBeautifulCode.Database.Recipes
 {
     using System.Collections.Generic;
     using System.Linq;

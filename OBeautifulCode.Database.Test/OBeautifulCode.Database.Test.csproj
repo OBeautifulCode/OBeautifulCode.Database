@@ -40,10 +40,6 @@
     </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OBeautifulCode.Reflection, Version=1.0.14.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OBeautifulCode.Reflection.1.0.14\lib\net45\OBeautifulCode.Reflection.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -67,6 +63,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include=".recipes\OBeautifulCode.Reflection\AssemblyHelper.cs" />
+    <Compile Include=".recipes\OBeautifulCode.Reflection\CompressionMethod.cs" />
     <Compile Include="DatabaseHelperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

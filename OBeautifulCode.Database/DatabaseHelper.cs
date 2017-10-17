@@ -7,7 +7,7 @@
 // </auto-generated>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Database
+namespace OBeautifulCode.Database.Recipes
 {
     using System;
     using System.Collections.Generic;
@@ -20,8 +20,8 @@ namespace OBeautifulCode.Database
     using System.Reflection;
     using System.Security;
 
-    using OBeautifulCode.Collection;
-    using OBeautifulCode.String;
+    using OBeautifulCode.Collection.Recipes;
+    using OBeautifulCode.String.Recipes;
 
     using Spritely.Recipes;
 

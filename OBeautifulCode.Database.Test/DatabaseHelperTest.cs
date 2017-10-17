@@ -16,7 +16,8 @@ namespace OBeautifulCode.Database.Test
     using System.IO;
     using System.Transactions;
 
-    using OBeautifulCode.Reflection;
+    using OBeautifulCode.Database.Recipes;
+    using OBeautifulCode.Reflection.Recipes;
 
     using Xunit;
 
