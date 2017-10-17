@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0"?>
 <package >
   <metadata>
-    <id>OBeautifulCode.Database.DatabaseHelper</id>
+    <id>OBeautifulCode.Database.Recipes.DatabaseHelper</id>
     <description>Provides various methods for interacting with a database.</description>
     <tags>ado database sql mssql</tags>
     <developmentDependency>true</developmentDependency>
