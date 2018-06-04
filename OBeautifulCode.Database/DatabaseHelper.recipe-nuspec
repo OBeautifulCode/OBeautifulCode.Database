@@ -4,8 +4,10 @@
     <description>Provides various methods for interacting with a database.</description>
     <tags>ado database sql mssql</tags>
     <iconUrl>https://raw.githubusercontent.com/OBeautifulCode/OBeautifulCode.Database/master/OBeautifulCode.Database/nuget-icon.png</iconUrl>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Data" targetFramework=".NETFramework4.6.2" />
+    </frameworkAssemblies>
     <dependencies>
-      <dependency id="System.Data" />
       <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.21" />
       <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.32" />
       <dependency id="OBeautifulCode.Validation.Recipes.ParameterValidator" version="1.0.13" />
