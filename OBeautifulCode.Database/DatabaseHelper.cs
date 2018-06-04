@@ -21,8 +21,7 @@ namespace OBeautifulCode.Database.Recipes
 
     using OBeautifulCode.Collection.Recipes;
     using OBeautifulCode.String.Recipes;
-
-    using Spritely.Recipes;
+    using OBeautifulCode.Validation.Recipes;
 
     using static System.FormattableString;
 
@@ -52,7 +51,7 @@ namespace OBeautifulCode.Database.Recipes
             string connectionString)
             where T : class, IDbConnection, new()
         {
-            new { connectionString }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { connectionString }.Must().NotBeNullNorWhiteSpace();
 
             T connection = null;
             try
@@ -104,10 +103,10 @@ namespace OBeautifulCode.Database.Recipes
             int timeoutSeconds = 0)
         {
             // check arguments
-            new { connection }.Must().NotBeNull().OrThrow();
-            new { connection.State }.Must().BeEqualTo(ConnectionState.Open).Because("connection is in an invalid state: " + connection.State + ".  Must be Open.").OrThrow();
-            new { commandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
-            new { timeoutSeconds }.Must().BeGreaterThanOrEqualTo(0).OrThrow();
+            new { connection }.Must().NotBeNull();
+            new { connection.State }.Must().BeEqualTo(ConnectionState.Open, "connection is in an invalid state: " + connection.State + ".  Must be Open.");
+            new { commandText }.Must().NotBeNullNorWhiteSpace();
+            new { timeoutSeconds }.Must().BeGreaterThanOrEqualTo(0);
 
             // validate transaction
             if (transaction != null)
@@ -633,7 +632,7 @@ namespace OBeautifulCode.Database.Recipes
         public static void RollbackTransaction(
             SqlTransaction transaction)
         {
-            new { transaction }.Must().NotBeNull().OrThrow();
+            new { transaction }.Must().NotBeNull();
 
             if (transaction.Connection == null)
             {
@@ -808,7 +807,7 @@ namespace OBeautifulCode.Database.Recipes
             bool prepareCommand = false,
             int timeoutSeconds = 0)
         {
-            new { outputFilePath }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { outputFilePath }.Must().NotBeNullNorWhiteSpace();
 
             using (var writer = new StreamWriter(outputFilePath))
             {
@@ -867,7 +866,7 @@ namespace OBeautifulCode.Database.Recipes
             int timeoutSeconds = 0)
             where T : class, IDbConnection, new()
         {
-            new { outputFilePath }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { outputFilePath }.Must().NotBeNullNorWhiteSpace();
 
             using (var writer = new StreamWriter(outputFilePath))
             {
@@ -909,7 +908,7 @@ namespace OBeautifulCode.Database.Recipes
             IDbTransaction transaction = null,
             int timeoutSeconds = 0)
         {
-            new { batchCommandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { batchCommandText }.Must().NotBeNullNorWhiteSpace();
 
             IEnumerable<string> statements = SqlBatchStatementSplitter.SplitSqlAndRemoveEmptyStatements(batchCommandText);
 
@@ -956,7 +955,7 @@ namespace OBeautifulCode.Database.Recipes
             int timeoutSeconds = 0)
             where T : class, IDbConnection, new()
         {
-            new { batchCommandText }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { batchCommandText }.Must().NotBeNullNorWhiteSpace();
 
             IEnumerable<string> statements = SqlBatchStatementSplitter.SplitSqlAndRemoveEmptyStatements(batchCommandText);
 
@@ -1000,7 +999,7 @@ namespace OBeautifulCode.Database.Recipes
             where T : IDbDataParameter, new()
         {
             // check parameters
-            new { name }.Must().NotBeNull().And().NotBeWhiteSpace().OrThrowFirstFailure();
+            new { name }.Must().NotBeNullNorWhiteSpace();
 
             if (name.Length < 2)
             {
