@@ -1,5 +1,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/xrkqyg27iuy4g1h7?svg=true)](https://ci.appveyor.com/project/SurajGupta/obeautifulcode-database)
 
+[![Nuget status](https://img.shields.io/nuget/v/OBeautifulCode.Database.Recipes.DatabaseHelper.svg)](https://www.nuget.org/packages/OBeautifulCode.Database.Recipes.DatabaseHelper)  OBeautifulCode.Database.Recipes.DatabaseHelper
+
 Database Helpers
 ================
 This library contains methods that reduce much of the boilerplate ADO.net code required to interact with a database.

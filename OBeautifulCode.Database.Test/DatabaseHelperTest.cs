@@ -1,6 +1,6 @@
 ﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DbHelperTest.cs" company="OBeautifulCode">
-//   Copyright 2015 OBeautifulCode
+// <copyright file="DatabaseHelperTest.cs" company="OBeautifulCode">
+//   Copyright (c) OBeautifulCode 2018. All rights reserved.
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -24,14 +24,11 @@ namespace OBeautifulCode.Database.Test
     using IsolationLevel = System.Data.IsolationLevel;
 
     /// <summary>
-    /// Tests the <see cref="DatabaseHelper"/> class.
-    /// </summary>
-    /// <remarks>
     /// This class was ported from an older library that used a poor style of unit testing.
     /// It had a few monolithic test methods instead of many smaller, single purpose methods.
     /// Because of the volume of test code, I was only able to break-up a few of these monolithic tests.
     /// The rest remain as-is.
-    /// </remarks>
+    /// </summary>
     public class DatabaseHelperTest : IDisposable
     {
         /// <summary>
@@ -76,8 +73,6 @@ namespace OBeautifulCode.Database.Test
         /// </summary>
         private string DatabaseName { get; set; }
 
-        // ReSharper disable InconsistentNaming
-        // ReSharper disable CoVariantArrayConversion
         [Fact]
         public static void ToBit_Returns1ForTrue0ForFalse()
         {
@@ -94,7 +89,7 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public static void CreateParameter_NameLessThanTwoCharactersInLength_ThrowsArgumentException()
+        public static void CreateParameter_NameIsLessThanTwoCharactersInLength_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
             Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>(string.Empty, DbType.String, "asdf"));
@@ -110,7 +105,7 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public static void CreateParameter_NameIsNotAlphaNumeric_ThrowsArgumentException()
+        public static void CreateParameter_NameIsNotAlphanumeric_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
             Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@*", DbType.String, "asdf"));
@@ -177,14 +172,14 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public void OpenConnection_ConnetionStringIsNull_ThrowsArgumentNullException()
+        public void OpenConnection_ConnectionStringIsNull_ThrowsArgumentNullException()
         {
             // Arrange, Act, Assert
             Assert.Throws<ArgumentNullException>(() => DatabaseHelper.OpenConnection<SqlConnection>(null));
         }
 
         [Fact]
-        public void OpenConnection_ConnetionStringIsWhitespace_ThrowsArgumentException()
+        public void OpenConnection_ConnectionStringIsWhiteSpace_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
             Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>(string.Empty));
@@ -193,7 +188,7 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public void OpenConnection_ConnetionStringNotProperlyConstructed_ThrowsArgumentException()
+        public void OpenConnection_ConnectionStringNotProperlyConstructed_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
             Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>("connetionstring"));
@@ -248,7 +243,7 @@ namespace OBeautifulCode.Database.Test
 
             // Act, Assert
             var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
-            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message);
+            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
 
             // Cleanup
             connection.Dispose();
@@ -264,7 +259,7 @@ namespace OBeautifulCode.Database.Test
 
             // Act, Assert
             var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
-            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message);
+            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -281,7 +276,7 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public void BuildCommand_CommandTextIsWhitespace_ThrowsArgumentException()
+        public void BuildCommand_CommandTextIsWhiteSpace_ThrowsArgumentException()
         {
             // Arrange
             var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
@@ -332,7 +327,7 @@ namespace OBeautifulCode.Database.Test
         }
 
         [Fact]
-        public void BuildCommand_TransactionIsInvalidBecauseItHasBeenComitted_ThrowsArgumentException()
+        public void BuildCommand_TransactionIsInvalidBecauseItHasBeenCommitted_ThrowsArgumentException()
         {
             // Arrange
             var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
@@ -1956,7 +1951,7 @@ namespace OBeautifulCode.Database.Test
             {
                 const string SqlCommand = "Update [DBHelper] Set [Value] = 5 Where [Date]='{0}'";
                 Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
@@ -1965,7 +1960,7 @@ namespace OBeautifulCode.Database.Test
             {
                 const string SqlCommand = "Update [DBHelper] Set [Value] = 4 Where [Date]='{0}'\r\nGO\r\nUpdate [DBHelper] Set [Csv,Test] = 'whatever' Where [Date]='{0}'\r\nGO\r\n";
                 Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
@@ -2015,12 +2010,12 @@ namespace OBeautifulCode.Database.Test
             // good sqlCommand - batch contains only one statement
             sqlCommand = "UPDATE [DBHelper] Set [Value] =5 WHERE [Date]='{0}'";
             Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal((decimal)5.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // good sqlCommand with multiple statements
             sqlCommand = "UPDATE [DBHelper] Set [Value] = 4 WHERE [Date]='{0}'\r\nGO\r\nUPDATE [DBHelper] Set [Csv,Test] = 'whatever' WHERE [Date]='{0}'\r\nGO\r\n";
             Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal((decimal)4.00000, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
             Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // empty batch, nothing happens.
@@ -2040,8 +2035,8 @@ namespace OBeautifulCode.Database.Test
         /// <summary>
         /// Dispose the instance.
         /// </summary>
-        /// <param name="disposing">Is disposing?</param>
-        public virtual void Dispose(bool disposing)
+        /// <param name="disposing">Indicates whether the method call comes from a dispose method (its value is true) or from a finalizer (its value is false).</param>
+        protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
@@ -2050,15 +2045,13 @@ namespace OBeautifulCode.Database.Test
             }
         }
 
-        // ReSharper restore CoVariantArrayConversion
-        // ReSharper restore InconsistentNaming
-
         /// <summary>
         /// Creates a database of stock quote data.
         /// </summary>
         /// <returns>
         /// Returns the database name.
         /// </returns>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "This is a method used in testing.")]
         private string CreatedSeededDatabase()
         {
             // create the database
@@ -2102,9 +2095,10 @@ namespace OBeautifulCode.Database.Test
         }
 
         /// <summary>
-        /// Drops a database
+        /// Drops a database.
         /// </summary>
         /// <param name="databaseName">The name of the database.</param>
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "This is a method used in testing.")]
         private void DropDatabase(string databaseName)
         {
             // delete the database

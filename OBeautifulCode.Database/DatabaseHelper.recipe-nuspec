@@ -1,0 +1,17 @@
+﻿<package>
+  <metadata>
+    <id>OBeautifulCode.Database.Recipes.DatabaseHelper</id>
+    <description>Provides various methods for interacting with a database.</description>
+    <tags>ado database sql mssql</tags>
+    <iconUrl>https://raw.githubusercontent.com/OBeautifulCode/OBeautifulCode.Database/master/OBeautifulCode.Database/nuget-icon.png</iconUrl>
+    <dependencies>
+      <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.21" />
+      <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.32" />
+      <dependency id="OBeautifulCode.Validation.Recipes.ParameterValidator" version="1.0.13" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="DatabaseHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
+    <file src="SqlBatchStatementSplitter.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
+  </files>
+</package>

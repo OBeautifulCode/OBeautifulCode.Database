@@ -1,0 +1,7 @@
+<package>
+  <metadata>
+    <description>Provides database-related convenience/helper methods.</description>
+    <tags>database helper</tags>
+    <iconUrl>https://raw.githubusercontent.com/OBeautifulCode/OBeautifulCode.Database/master/OBeautifulCode.Database/nuget-icon.png</iconUrl>
+  </metadata>
+</package>
