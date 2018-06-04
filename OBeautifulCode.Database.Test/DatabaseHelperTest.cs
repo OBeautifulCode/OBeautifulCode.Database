@@ -242,8 +242,8 @@ namespace OBeautifulCode.Database.Test
             connection.Close();
 
             // Act, Assert
-            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
-            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
+            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
+            Assert.StartsWith("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
 
             // Cleanup
             connection.Dispose();
@@ -258,8 +258,8 @@ namespace OBeautifulCode.Database.Test
             connection.Dispose();
 
             // Act, Assert
-            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
-            Assert.Contains("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
+            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
+            Assert.StartsWith("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
         }
 
         [Fact]
