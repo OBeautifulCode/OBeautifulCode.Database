@@ -43,6 +43,7 @@ namespace OBeautifulCode.Database.Recipes
             string batchSql)
         {
             var result = Regex.Split(batchSql + "\n", SqlStatementSeparatorRegexPattern, RegexOptions.IgnoreCase | RegexOptions.Multiline).Where(statement => !string.IsNullOrWhiteSpace(statement));
+
             return result;
         }
     }

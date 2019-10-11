@@ -8,9 +8,9 @@
       <frameworkAssembly assemblyName="System.Data" targetFramework=".NETFramework4.6.2" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.21" />
-      <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.32" />
-      <dependency id="OBeautifulCode.Validation.Recipes.ParameterValidator" version="1.0.13" />
+      <dependency id="OBeautifulCode.Assertion.Recipes.Must" version="1.0.9" />
+      <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.38" />
+      <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.42" />
     </dependencies>
   </metadata>
   <files>
