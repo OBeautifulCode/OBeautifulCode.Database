@@ -43,7 +43,7 @@ namespace OBeautifulCode.Database.Recipes.Test
         /// <summary>
         /// Appveyor SQL Server instance name.
         /// </summary>
-        private const string Server = @"(local)\SQL2016";
+        private const string Server = @"(local)\SQL2017";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DatabaseHelperTest"/> class.
