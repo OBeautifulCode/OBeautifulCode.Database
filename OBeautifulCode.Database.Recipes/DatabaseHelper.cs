@@ -1164,7 +1164,7 @@ namespace OBeautifulCode.Database.Recipes
                 var result = new Dictionary<string, object>();
                 for (int x = 0; x < reader.FieldCount; x++)
                 {
-                    string fieldName = reader.GetName(x).ToLowerTrimmed();
+                    string fieldName = reader.GetName(x).ToLowerTrimmed(CultureInfo.InvariantCulture);
                     if (result.ContainsKey(fieldName))
                     {
                         throw new InvalidOperationException("Query results in two columns with the same name.");
