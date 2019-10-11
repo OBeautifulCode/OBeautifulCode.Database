@@ -1201,7 +1201,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
                 Collection<object> values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized);
-                Assert.Equal(1, values.Count);
+                Assert.Single(values);
                 Assert.IsType<decimal>(values[0]);
                 Assert.Equal(19.4519m, (decimal)values[0]);
                 sqlConnection.Close();
@@ -1293,7 +1293,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one column, one row
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             Collection<object> values = DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
-            Assert.Equal(1, values.Count);
+            Assert.Single(values);
             Assert.IsType<decimal>(values[0]);
             Assert.Equal(19.4519m, (decimal)values[0]);
 
@@ -1596,7 +1596,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
             {
                 Dictionary<string, object> values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized);
-                Assert.Equal(1, values.Count);
+                Assert.Single(values);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
                 Assert.Equal(19.4519m, (decimal)values["open"]);
@@ -1692,7 +1692,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             Dictionary<string, object> values = DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
-            Assert.Equal(1, values.Count);
+            Assert.Single(values);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
             Assert.Equal(19.4519m, (decimal)values["open"]);
