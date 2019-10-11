@@ -8,8 +8,8 @@
     <ProjectGuid>{93799DD6-BC35-48E2-8CE4-0EFA33A518E0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OBeautifulCode.Database.Test</RootNamespace>
-    <AssemblyName>OBeautifulCode.Database.Test</AssemblyName>
+    <RootNamespace>OBeautifulCode.Database.Recipes.Test</RootNamespace>
+    <AssemblyName>OBeautifulCode.Database.Recipes.Test</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -87,9 +87,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OBeautifulCode.Database\OBeautifulCode.Database.csproj">
+    <ProjectReference Include="..\OBeautifulCode.Database.Recipes\OBeautifulCode.Database.Recipes.csproj">
       <Project>{03f9ac6d-77af-44d2-b675-06bc34824d2b}</Project>
-      <Name>OBeautifulCode.Database</Name>
+      <Name>OBeautifulCode.Database.Recipes</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

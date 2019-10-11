@@ -4,7 +4,7 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace OBeautifulCode.Database.Test
+namespace OBeautifulCode.Database.Recipes.Test
 {
     using System;
     using System.Collections.Generic;
@@ -16,7 +16,6 @@ namespace OBeautifulCode.Database.Test
     using System.IO;
     using System.Transactions;
 
-    using OBeautifulCode.Database.Recipes;
     using OBeautifulCode.Reflection.Recipes;
 
     using Xunit;
