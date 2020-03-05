@@ -1,4 +1,4 @@
-﻿<package>
+<package>
   <metadata>
     <id>OBeautifulCode.Database.Recipes.DatabaseHelper</id>
     <description>Provides various methods for interacting with a database.</description>
@@ -8,9 +8,9 @@
       <frameworkAssembly assemblyName="System.Data" targetFramework=".NETFramework4.6.2" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="OBeautifulCode.Assertion.Recipes.Must" version="1.0.12" />
-      <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.41" />
-      <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.43" />
+      <dependency id="OBeautifulCode.Assertion.Recipes.Must" version="1.0.15" />
+      <dependency id="OBeautifulCode.Collection.Recipes.EnumerableExtensions" version="1.0.42" />
+      <dependency id="OBeautifulCode.String.Recipes.StringExtensions" version="1.0.44" />
     </dependencies>
   </metadata>
   <files>
