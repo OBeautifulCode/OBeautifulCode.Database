@@ -16,6 +16,7 @@
   <files>
     <file src=".analyzers\SuppressBecause.cs" target="content\net462\.recipes\OBeautifulCode.Database\SuppressBecause.cs" />
     <file src="DatabaseHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
+    <file src="SqlParameterExtensions.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlParameterExtensions.cs" />
     <file src="SqlBatchStatementSplitter.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
   </files>
 </package>
