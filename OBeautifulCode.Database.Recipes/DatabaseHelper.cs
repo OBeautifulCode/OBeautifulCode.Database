@@ -524,7 +524,7 @@ namespace OBeautifulCode.Database.Recipes
 
             foreach (var statement in statements)
             {
-                var rowsAffected = connection.ExecuteNonQuery(statement, commandTimeoutInSeconds);
+                var rowsAffected = connection.ExecuteNonQuery(statement, commandTimeoutInSeconds, transaction: transaction);
 
                 result.Add(rowsAffected);
             }
@@ -593,7 +593,7 @@ namespace OBeautifulCode.Database.Recipes
 
             foreach (var statement in statements)
             {
-                var rowsAffected = await connection.ExecuteNonQueryAsync(statement, commandTimeoutInSeconds);
+                var rowsAffected = await connection.ExecuteNonQueryAsync(statement, commandTimeoutInSeconds, transaction: transaction);
 
                 result.Add(rowsAffected);
             }

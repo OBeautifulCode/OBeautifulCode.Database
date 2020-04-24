@@ -14,6 +14,7 @@ namespace OBeautifulCode.Database.Recipes.Test
     using System.Data.SqlClient;
     using System.Globalization;
     using System.IO;
+    using System.Linq;
     using System.Transactions;
 
     using OBeautifulCode.Reflection.Recipes;
@@ -81,130 +82,40 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public static void CreateParameter_NameIsNull_ThrowsArgumentNullException()
-        {
-            // Arrange, Act, Assert
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.CreateParameter<SqlParameter>(null, DbType.String, "asdf"));
-        }
-
-        [Fact]
-        public static void CreateParameter_NameIsLessThanTwoCharactersInLength_ThrowsArgumentException()
-        {
-            // Arrange, Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>(string.Empty, DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("A", DbType.String, "asdf"));
-        }
-
-        [Fact]
-        public static void CreateParameter_NameDoesNotBeginWithAtSign_ThrowsArgumentException()
-        {
-            // Arrange, Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("AB", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("ABCDE", DbType.String, "asdf"));
-        }
-
-        [Fact]
-        public static void CreateParameter_NameIsNotAlphanumeric_ThrowsArgumentException()
-        {
-            // Arrange, Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@*", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@Para Meter", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@     ", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@  \r\n   ", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@KDS12*#324KDFJLS", DbType.String, "asdf"));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.CreateParameter<SqlParameter>("@[][][", DbType.String, "asdf"));
-        }
-
-        [Fact]
-        public static void CreateParameter_StoresAllParametersPassedToConstructorInTheRightDbParameterProperty()
-        {
-            // Arrange
-            const string Name = "@MyParameter";
-            const DbType ParamDbType = DbType.Decimal;
-            object value = 54m;
-            const ParameterDirection ParamDirection = ParameterDirection.ReturnValue;
-            int? size = 10;
-            byte? precision = 5;
-            byte? scale = 3;
-            const bool IsNullable = true;
-
-            // Act
-            var parameter = (IDbDataParameter)DatabaseHelper.CreateParameter<SqlParameter>(Name, ParamDbType, value, ParamDirection, size, precision, scale, IsNullable);
-
-            // Assert
-            Assert.Equal(Name, parameter.ParameterName);
-            Assert.Equal(ParamDbType, parameter.DbType);
-            Assert.Equal(value, parameter.Value);
-            Assert.Equal(ParamDirection, parameter.Direction);
-            Assert.Equal(size, parameter.Size);
-            Assert.Equal(precision, parameter.Precision);
-            Assert.Equal(scale, parameter.Scale);
-            Assert.Equal(IsNullable, parameter.IsNullable);
-        }
-
-        [Fact]
-        public static void CreateParameter_ValueIsNull_StoresValueAsDbNull()
-        {
-            // Arrange
-            const string Name = "@MyParameter";
-            const DbType ParamDbType = DbType.Decimal;
-
-            // Act
-            var parameter = (IDbDataParameter)DatabaseHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null);
-
-            // Assert
-            Assert.Equal(DBNull.Value, parameter.Value);
-        }
-
-        [Fact]
-        public static void CreateParameter_UseDefaultParameterValues_DoesNotThrow()
-        {
-            // Arrange
-            const string Name = "@MyParameter";
-            const DbType ParamDbType = DbType.Decimal;
-
-            // Act
-            var ex = Record.Exception(() => DatabaseHelper.CreateParameter<SqlParameter>(Name, ParamDbType, null));
-
-            // Assert
-            Assert.Null(ex);
-        }
-
-        [Fact]
         public void OpenConnection_ConnectionStringIsNull_ThrowsArgumentNullException()
         {
             // Arrange, Act, Assert
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.OpenConnection<SqlConnection>(null));
+            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.OpenSqlConnection(null));
         }
 
         [Fact]
         public void OpenConnection_ConnectionStringIsWhiteSpace_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>(string.Empty));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>("  "));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>("  \r\n  "));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenSqlConnection(string.Empty));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenSqlConnection("  "));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenSqlConnection("  \r\n  "));
         }
 
         [Fact]
         public void OpenConnection_ConnectionStringNotProperlyConstructed_ThrowsArgumentException()
         {
             // Arrange, Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenConnection<SqlConnection>("connetionstring"));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.OpenSqlConnection("connetionstring"));
         }
 
         [Fact]
         public void OpenConnection_ConnectionCannotBeEstablished_ThrowsSqlException()
         {
             // Arrange, Act, Assert
-            Assert.Throws<SqlException>(() => DatabaseHelper.OpenConnection<SqlConnection>("Data Source=DOESNTEXIST;Initial Catalog=StockQuotes;Integrated Security=SSPI;"));
+            Assert.Throws<SqlException>(() => DatabaseHelper.OpenSqlConnection("Data Source=DOESNTEXIST;Initial Catalog=StockQuotes;Integrated Security=SSPI;"));
         }
 
         [Fact]
         public void OpenConnection_ConnectionStringIsValidAndDatabaseIsAccessible_ReturnsOpenConnection()
         {
             // Arrange, Act, Assert
-            using (var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 Assert.Equal(ConnectionState.Open, connection.State);
                 connection.Close();
@@ -212,36 +123,22 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void OpenConnection_UsingOleDbConnection_ReturnsOpenConnection()
-        {
-            // Arrange
-            string connectionString = string.Format("Provider=SQLNCLI11;Server={0};Database={1};Trusted_Connection=yes;User Id={2};Password={3};Timeout=3600", Server, this.DatabaseName, UserId, Password);
-
-            // Act, Assert
-            using (var connection = DatabaseHelper.OpenConnection<OleDbConnection>(connectionString))
-            {
-                Assert.Equal(ConnectionState.Open, connection.State);
-                connection.Close();
-            }
-        }
-
-        [Fact]
-        public void BuildCommand_ConnectionIsNull_ThrowsArgumentNullException()
+        public void BuildSqlCommand_ConnectionIsNull_ThrowsArgumentNullException()
         {
             // Arrange, Act, Assert
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.BuildCommand(null, "Select * From [Whatever]"));
+            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.BuildSqlCommand(null, "Select * From [Whatever]"));
         }
 
         [Fact]
-        public void BuildCommand_ConnectionIsNotOpen_ThrowsArgumentException()
+        public void BuildSqlCommand_ConnectionIsNotOpen_ThrowsArgumentException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string SqlStatement = "Select * From StockQuotes";
             connection.Close();
 
             // Act, Assert
-            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
+            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement));
             Assert.StartsWith("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
 
             // Cleanup
@@ -249,56 +146,56 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ConnectionIsDisposed_ThrowsArgumentException()
+        public void BuildSqlCommand_ConnectionIsDisposed_ThrowsArgumentException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string SqlStatement = "Select * From StockQuotes";
             connection.Dispose();
 
             // Act, Assert
-            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement));
+            var actualException = Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement));
             Assert.StartsWith("connection is in an invalid state: " + connection.State + ".  Must be Open.", actualException.Message, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void BuildCommand_CommandTextIsNull_ThrowsArgumentNullException()
+        public void BuildSqlCommand_CommandTextIsNull_ThrowsArgumentNullException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
 
             // Act, Assert
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.BuildCommand(connection, null));
+            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.BuildSqlCommand(connection, null));
 
             // Cleanup
             connection.Dispose();
         }
 
         [Fact]
-        public void BuildCommand_CommandTextIsWhiteSpace_ThrowsArgumentException()
+        public void BuildSqlCommand_CommandTextIsWhiteSpace_ThrowsArgumentException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
 
             // Act, Assert
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, string.Empty));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, "   "));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, "  \r\n  "));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection, string.Empty));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection, "   "));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection, "  \r\n  "));
 
             // Cleanup
             connection.Dispose();
         }
 
         [Fact]
-        public void BuildCommand_TimeoutIsLessThanZero_ThrowsArgumentOutOfRangeException()
+        public void BuildSqlCommand_TimeoutIsLessThanZero_ThrowsArgumentOutOfRangeException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string SqlStatement = "Select * From StockQuotes";
 
             // Act, Assert
-            Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, null, false, -1));
-            Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, null, false, int.MinValue));
+            Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement, -1, null, CommandType.Text, null, false));
+            Assert.Throws<ArgumentOutOfRangeException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement, int.MinValue, null, CommandType.Text, null, false));
 
             // Cleanup
             connection.Close();
@@ -306,18 +203,18 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_TransactionIsInvalidBecauseItHasBeenRolledBack_ThrowsArgumentException()
+        public void BuildSqlCommand_TransactionIsInvalidBecauseItHasBeenRolledBack_ThrowsArgumentException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string SqlStatement = "Select * From StockQuotes";
             var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             transaction.Rollback();
 
             // Act, Assert
             Assert.Null(transaction.Connection);
-            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, transaction));
-            Assert.Equal("transaction is invalid.", actualException.Message);
+            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement, 30, null, CommandType.Text, transaction));
+            Assert.Equal("transaction is invalid; its Connection is null.", actualException.Message);
 
             // Cleanup
             transaction.Dispose();
@@ -326,18 +223,18 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_TransactionIsInvalidBecauseItHasBeenCommitted_ThrowsArgumentException()
+        public void BuildSqlCommand_TransactionIsInvalidBecauseItHasBeenCommitted_ThrowsArgumentException()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string SqlStatement = "Select * From StockQuotes";
             var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
             transaction.Commit();
 
             // Act, Assert
             Assert.Null(transaction.Connection);
-            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, null, CommandType.Text, transaction));
-            Assert.Equal("transaction is invalid.", actualException.Message);
+            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement, 30, null, CommandType.Text, transaction));
+            Assert.Equal("transaction is invalid; its Connection is null.", actualException.Message);
 
             // Cleanup
             transaction.Dispose();
@@ -346,18 +243,18 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_TransactionUsesDifferentConnectionThenTheSpecifiedOne_ThrowsArgumentException()
+        public void BuildSqlCommand_TransactionUsesDifferentConnectionThenTheSpecifiedOne_ThrowsArgumentException()
         {
             // Arrange
-            var connection1 = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection1 = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             string databaseFilePath2 = this.CreatedSeededDatabase();
-            var connection2 = DatabaseHelper.OpenConnection<SqlConnection>(this.BuildConnectionString(databaseFilePath2));
+            var connection2 = DatabaseHelper.OpenSqlConnection(this.BuildConnectionString(databaseFilePath2));
             var transaction = connection1.BeginTransaction();
             const string SqlStatement = "Select * From StockQuotes";
 
             // Act, Assert
-            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(connection2, SqlStatement, null, CommandType.Text, transaction));
-            Assert.Equal("transaction is using a different connection than the specified connection.", actualException.Message);
+            var actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(connection2, SqlStatement, 30, null, CommandType.Text, transaction));
+            Assert.Equal("transaction is using a different Connection than the specified connection.", actualException.Message);
 
             // Cleanup
             transaction.Dispose();
@@ -368,34 +265,16 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_UseParameterOfDifferentTypeThanOneSupportedByDataProvider_ThrowsInvalidOperationException()
+        public void BuildSqlCommand_SomeParametersAreNull_NullParametersAreIgnored()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
-            var parameter = new OleDbParameter("@symbol", OleDbType.VarChar, 10);
-            var parameters = new IDataParameter[] { parameter };
-            const string SqlStatement = "Select * From [StockQuotes] Where [Symbol] = @symbol";
-
-            // Act, Assert
-            var actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildCommand(connection, SqlStatement, parameters));
-            Assert.Equal("Attempting to set a parameter of type OleDbParameter that was designed for a data provider other than the provider represented by the specified connection.", actualException.Message);
-
-            // Cleanup
-            connection.Close();
-            connection.Dispose();
-        }
-
-        [Fact]
-        public void BuildCommand_SomeParametersAreNull_NullParametersAreIgnored()
-        {
-            // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             var parameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 15);
-            var parameters = new IDataParameter[] { null, parameter, null, null };
+            var parameters = new SqlParameter[] { parameter };
             const string SqlStatement = "Select * From [StockQuotes] Where [Symbol] = @symbol";
 
             // Act
-            var ex = Record.Exception(() => DatabaseHelper.BuildCommand(connection, SqlStatement, parameters).Dispose());
+            var ex = Record.Exception(() => DatabaseHelper.BuildSqlCommand(connection, SqlStatement, 30, parameters).Dispose());
 
             // Assert
             Assert.Null(ex);
@@ -406,14 +285,14 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommand_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTextCommand_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "Select [Open] From [StockQuotes] Where [Date]='1/5/2009' AND [Symbol]='msft'";
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText);
             object actual = command.ExecuteScalar();
 
             // Assert
@@ -427,14 +306,14 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandAndPrepareCommandWithNoParameters_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTextCommandAndPrepareCommandWithNoParameters_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "Select [Open] From [StockQuotes] Where [Date]='1/5/2009' AND [Symbol]='msft'";
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText, null, CommandType.Text, null, true);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText, 30, null, CommandType.Text, null, true);
             object actual = command.ExecuteScalar();
 
             // Assert
@@ -448,17 +327,17 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandWithParameters_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTextCommandWithParameters_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "Select [Low] From [StockQuotes] Where [Date]=@date AND [Symbol]=@symbol";
             var dateParameter = new SqlParameter("@date", new DateTime(2009, 1, 5));
             var symbolParameter = new SqlParameter("@symbol", "msft");
             var parameters = new[] { dateParameter, symbolParameter };
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText, parameters);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText, 30, parameters);
             object actual = command.ExecuteScalar();
 
             // Assert
@@ -472,17 +351,17 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandWithParametersAndPrepareCommand_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTextCommandWithParametersAndPrepareCommand_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "Select [Close] From [StockQuotes] Where [Date]=@date AND [Symbol]=@symbol";
             var dateParameter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
             var parameters = new[] { dateParameter, symbolParameter };
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText, parameters, CommandType.Text, null, true);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText, 30, parameters, CommandType.Text, null, true);
             object actual = command.ExecuteScalar();
 
             // Assert
@@ -496,10 +375,10 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidStoredProcedure_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidStoredProcedure_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "FetchClosePrice";
             var dateParameter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
@@ -507,7 +386,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             var parameters = new[] { dateParameter, symbolParameter, closePriceOutputParameter };
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText, parameters, CommandType.StoredProcedure);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText, 30, parameters, CommandType.StoredProcedure);
             command.ExecuteScalar();
 
             // Assert
@@ -521,10 +400,10 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidStoredProcedureAndPrepareParameters_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidStoredProcedureAndPrepareParameters_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string CommandText = "FetchClosePrice";
             var dateParameter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 2, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
@@ -532,7 +411,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             var parameters = new[] { dateParameter, symbolParameter, closePriceOutputParameter };
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, CommandText, parameters, CommandType.StoredProcedure, null, true);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, CommandText, 30, parameters, CommandType.StoredProcedure, null, true);
             command.ExecuteScalar();
 
             // Assert
@@ -546,15 +425,15 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact(Skip = "Haven't researched how to do a TableDirect query")]
-        public void BuildCommand_ValidTableDirectQuery_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTableDirectQuery_ReturnsExpectedData()
         {
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandToInsertRowAndUseTransaction_ReturnsNumberOfRowsAffected()
+        public void BuildSqlCommand_ValidTextCommandToInsertRowAndUseTransaction_ReturnsNumberOfRowsAffected()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string InsertValueSql = @"INSERT [StockQuotes] ([Symbol], [Date], [Open], [High], [Low], [Close], [Volume], [OpenInterest]) VALUES (@Symbol, @Date, 1,2,3,4,5, NULL)";
             var day = new DateTime(2014, 1, 1);
             var dateParameter = new SqlParameter("@Date", SqlDbType.SmallDateTime) { Value = day };
@@ -563,7 +442,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             var transaction = connection.BeginTransaction();
 
             // Act
-            IDbCommand command = DatabaseHelper.BuildCommand(connection, InsertValueSql, parameters, CommandType.Text, transaction, true);
+            IDbCommand command = DatabaseHelper.BuildSqlCommand(connection, InsertValueSql, 30, parameters, CommandType.Text, transaction, true);
             object actual = command.ExecuteNonQuery();
 
             // Assert
@@ -577,10 +456,10 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandToRetrieveInsertedRowAndUseTransactionForBoth_ReturnsExpectedData()
+        public void BuildSqlCommand_ValidTextCommandToRetrieveInsertedRowAndUseTransactionForBoth_ReturnsExpectedData()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string InsertValueSql = @"INSERT [StockQuotes] ([Symbol], [Date], [Open], [High], [Low], [Close], [Volume], [OpenInterest]) VALUES (@Symbol, @Date, 1,2,3,4,506, NULL)";
             const string VerifyValueSql = "Select [Volume] From [StockQuotes] Where (Date = @Date) And (Symbol = @Symbol)";
             var day = new DateTime(2014, 1, 1);
@@ -593,9 +472,9 @@ namespace OBeautifulCode.Database.Recipes.Test
             var transaction = connection.BeginTransaction();
 
             // Act
-            IDbCommand command1 = DatabaseHelper.BuildCommand(connection, InsertValueSql, parameters1, CommandType.Text, transaction, true);
+            IDbCommand command1 = DatabaseHelper.BuildSqlCommand(connection, InsertValueSql, 30, parameters1, CommandType.Text, transaction, true);
             command1.ExecuteNonQuery();
-            IDbCommand command2 = DatabaseHelper.BuildCommand(connection, VerifyValueSql, parameters2, CommandType.Text, transaction, true);
+            IDbCommand command2 = DatabaseHelper.BuildSqlCommand(connection, VerifyValueSql, 30, parameters2, CommandType.Text, transaction, true);
             var actual = command2.ExecuteScalar();
 
             // Assert
@@ -611,10 +490,10 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_ValidTextCommandToInsertedRowUseTransactionAndThenRollback_InsertedRowIsRemovedFromDatabase()
+        public void BuildSqlCommand_ValidTextCommandToInsertedRowUseTransactionAndThenRollback_InsertedRowIsRemovedFromDatabase()
         {
             // Arrange
-            var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString);
+            var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString);
             const string InsertValueSql = @"INSERT [StockQuotes] ([Symbol], [Date], [Open], [High], [Low], [Close], [Volume], [OpenInterest]) VALUES (@Symbol, @Date, 1,2,3,4,506, NULL)";
             const string VerifyValueSql = "Select [Volume] From [StockQuotes] Where (Date = @Date) And (Symbol = @Symbol)";
             var day = new DateTime(2014, 1, 1);
@@ -627,10 +506,10 @@ namespace OBeautifulCode.Database.Recipes.Test
             var transaction = connection.BeginTransaction();
 
             // Act
-            IDbCommand command1 = DatabaseHelper.BuildCommand(connection, InsertValueSql, parameters1, CommandType.Text, transaction, true);
+            IDbCommand command1 = DatabaseHelper.BuildSqlCommand(connection, InsertValueSql, 30, parameters1, CommandType.Text, transaction, true);
             command1.ExecuteNonQuery();
             transaction.Rollback();
-            IDbCommand command2 = DatabaseHelper.BuildCommand(connection, VerifyValueSql, parameters2, CommandType.Text, null, true);
+            IDbCommand command2 = DatabaseHelper.BuildSqlCommand(connection, VerifyValueSql, 30, parameters2, CommandType.Text, null, true);
             var actual = command2.ExecuteScalar();
 
             // Assert
@@ -645,39 +524,34 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void BuildCommand_MonolithicTest()
+        public void BuildSqlCommand_MonolithicTest()
         {
             // issues with parameters
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 // type not specified
-                IDbDataParameter parameter = new SqlParameter("@symbol", "msft");
-                Exception actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", new IDataParameter[] { parameter }, CommandType.Text, null, true, 30));
+                var parameter = new SqlParameter("@symbol", "msft");
+                Exception actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildSqlCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", 30, new SqlParameter[] { parameter }, CommandType.Text, null, true));
                 Assert.Equal("SqlCommand.Prepare method requires all parameters to have an explicitly set type.", actualException.Message);
 
                 // length parameters not specified
                 parameter = new SqlParameter("@symbol", SqlDbType.VarChar);
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", new IDataParameter[] { parameter }, CommandType.Text, null, true, 30));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildSqlCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", 30, new SqlParameter[] { parameter }, CommandType.Text, null, true));
                 Assert.Equal("SqlCommand.Prepare method requires all variable length parameters to have an explicitly set non-zero Size.", actualException.Message);
 
                 // parameter is contained by another collection
                 parameter.Size = 10;
-                actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", new IDataParameter[] { parameter }, CommandType.Text, null, true, 30));
+                actualException = Assert.Throws<ArgumentException>(() => DatabaseHelper.BuildSqlCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", 30, new SqlParameter[] { parameter }, CommandType.Text, null, true));
                 Assert.Equal("The SqlParameter is already contained by another SqlParameterCollection.", actualException.Message);
 
                 // cannot use prepare when connection is pending a local transaction
                 using (SqlTransaction sqlTransaction = sqlConnection.BeginTransaction())
                 {
                     parameter = new SqlParameter("@symbol", SqlDbType.VarChar, 10);
-                    actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", new IDataParameter[] { parameter }, CommandType.Text, null, true, 30));
+                    actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildSqlCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", 30, new SqlParameter[] { parameter }, CommandType.Text, null, true));
                     Assert.Equal("Prepare requires the command to have a transaction when the connection assigned to the command is in a pending local transaction.  The Transaction property of the command has not been initialized.", actualException.Message);
                     sqlTransaction.Rollback();
                 }
-
-                // mismatch of parameter type and provider type
-                parameter = new OleDbParameter("@symbol", OleDbType.VarChar, 10);
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.BuildCommand(sqlConnection, "Select * From [StockQuotes] Where [Symbol] = @symbol", new IDataParameter[] { parameter }, CommandType.Text, null, true, 30));
-                Assert.Equal("Attempting to set a parameter of type OleDbParameter that was designed for a data provider other than the provider represented by the specified connection.", actualException.Message);
             }
 
             // valid command with ambient transaction - rollback
@@ -687,22 +561,22 @@ namespace OBeautifulCode.Database.Recipes.Test
             const string VerifyValueSql = "Select [Value] From [DBHelper] Where Date = @Date";
             using (new TransactionScope())
             {
-                using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
                 {
                     // insert value
                     dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
                     var valueParameter = new SqlParameter("@Value", SqlDbType.Decimal) { Value = 15.4, Precision = 10, Scale = 5 };
-                    using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, InsertSql, new[] { dateParameter, valueParameter }, CommandType.Text, null, true, 30))
+                    using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, InsertSql, 30, new[] { dateParameter, valueParameter }, CommandType.Text, null, true))
                     {
                         Assert.Equal(1, command.ExecuteNonQuery());
                     }
                 }
 
-                using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
                 {
                     // verify exists
                     dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
-                    using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, VerifyValueSql, new[] { dateParameter }, CommandType.Text, null, true, 30))
+                    using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, VerifyValueSql, 30, new[] { dateParameter }, CommandType.Text, null, true))
                     {
                         object result = command.ExecuteScalar();
                         Assert.IsType<decimal>(result);
@@ -711,11 +585,11 @@ namespace OBeautifulCode.Database.Recipes.Test
                 }
             }
 
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 // scope was not comitted - data should have been discarded
                 dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
-                using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, VerifyValueSql, new[] { dateParameter }, CommandType.Text, null, true, 30))
+                using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, VerifyValueSql, 30, new[] { dateParameter }, CommandType.Text, null, true))
                 {
                     Assert.Null(command.ExecuteScalar());
                 }
@@ -725,22 +599,22 @@ namespace OBeautifulCode.Database.Recipes.Test
             now = DateTime.Now;
             using (var scope = new TransactionScope())
             {
-                using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
                 {
                     // insert value
                     dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
                     var valueParameter = new SqlParameter("@Value", SqlDbType.Decimal) { Value = 15.4, Precision = 10, Scale = 5 };
-                    using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, InsertSql, new[] { dateParameter, valueParameter }, CommandType.Text, null, true, 30))
+                    using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, InsertSql, 30, new[] { dateParameter, valueParameter }, CommandType.Text, null, true))
                     {
                         Assert.Equal(1, command.ExecuteNonQuery());
                     }
                 }
 
-                using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
                 {
                     // verify exists
                     dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
-                    using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, VerifyValueSql, new[] { dateParameter }, CommandType.Text, null, true, 30))
+                    using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, VerifyValueSql, 30, new[] { dateParameter }, CommandType.Text, null, true))
                     {
                         object result = command.ExecuteScalar();
                         Assert.IsType<decimal>(result);
@@ -752,10 +626,10 @@ namespace OBeautifulCode.Database.Recipes.Test
             }
 
             // verify exists
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 dateParameter = new SqlParameter("@Date", SqlDbType.DateTime) { Value = now };
-                using (IDbCommand command = DatabaseHelper.BuildCommand(sqlConnection, VerifyValueSql, new[] { dateParameter }, CommandType.Text, null, true, 30))
+                using (IDbCommand command = DatabaseHelper.BuildSqlCommand(sqlConnection, VerifyValueSql, 30, new[] { dateParameter }, CommandType.Text, null, true))
                 {
                     object result = command.ExecuteScalar();
                     Assert.IsType<decimal>(result);
@@ -776,11 +650,11 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ExecuteReader_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand
+            // not testing: all exceptions generated from BuildSqlCommand
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
@@ -790,10 +664,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter is missing
             const string SqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter }));
                 Assert.Equal("Must declare the scalar variable \"@symbol\".", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -801,7 +675,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // transaction not provided - connection is pending a local transaction
             const string SqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' AND [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (sqlConnection.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -813,7 +687,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             }
 
             // there is already an open datareader associated with the connection
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryNonParameterized))
                 {
@@ -826,11 +700,11 @@ namespace OBeautifulCode.Database.Recipes.Test
             }
 
             // parameter datatypes are wrong - this does not throw an SqlException.  It simply returns a reader with no rows.  Calling Read() on reader will throw.
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.CloseConnection))
+                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.CloseConnection))
                 {
                     actualException = Assert.Throws<SqlException>(() => reader.Read());
                     Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
@@ -842,9 +716,9 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // behavior is used in executing reader
             // reader matches connection type
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryNonParameterized, null, CommandType.Text, null, CommandBehavior.CloseConnection))
+                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryNonParameterized, 30, null, CommandType.Text, null, CommandBehavior.CloseConnection))
                 {
                     Assert.IsType<SqlDataReader>(reader);
                     reader.Close();
@@ -853,11 +727,11 @@ namespace OBeautifulCode.Database.Recipes.Test
             }
 
             // get a reader with actual data
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true))
+                using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true))
                 {
                     Assert.Equal(1, reader.FieldCount);
                     Assert.True(reader.Read());
@@ -872,19 +746,19 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ExecuteReader_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand
+            // not testing: all exceptions generated from BuildSqlCommand
             // not testing: all exceptions from OpenConnection
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, "SELECT * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteReader(this.ConnectionString, "SELECT * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong - this does not throw an SqlException.  It simply returns a reader with no rows. Call Read() on reader will throw.
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            using (IDataReader reader = DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection))
+            using (IDataReader reader = DatabaseHelper.ExecuteReader(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection))
             {
                 actualException = Assert.Throws<SqlException>(() => reader.Read());
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
@@ -893,7 +767,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // IDataReader type matches connection type
             const string SqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' AND [Symbol] = 'msft'";
-            using (IDataReader reader = DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, SqlQueryNonParameterized, null, CommandType.Text, CommandBehavior.CloseConnection))
+            using (IDataReader reader = DatabaseHelper.ExecuteReader(this.ConnectionString, SqlQueryNonParameterized, 30, null, CommandType.Text, CommandBehavior.CloseConnection))
             {
                 Assert.IsType<SqlDataReader>(reader);
                 reader.Close();
@@ -904,7 +778,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] >= @date AND [Symbol] = @symbol Order By [Date]";
             dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            using (IDataReader reader = DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.SingleRow | CommandBehavior.CloseConnection, true))
+            using (IDataReader reader = DatabaseHelper.ExecuteReader(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.SingleRow | CommandBehavior.CloseConnection, true))
             {
                 Assert.Equal(1, reader.FieldCount);
                 Assert.True(reader.Read());
@@ -918,11 +792,11 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ExecuteNonQuery_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand
+            // not testing: all exceptions generated from BuildSqlCommand
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into "));
                 Assert.Equal("Incorrect syntax near 'Into'.", actualException.Message);
@@ -932,10 +806,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter is missing
             string sqlQueryParameterized = "Update [StockQuotes] Set [Symbol] = @symbol Where [Date] = @date and [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, new[] { dateParamter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter }));
                 Assert.Equal("Must declare the scalar variable \"@symbol\".", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -943,7 +817,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // transaction not provided - connection is pending a local transaction
             const string SqlQueryNonParameterized = "Update [StockQuotes] Set [Symbol] = 'msft' Where [Date] = '1/5/2009' and [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (sqlConnection.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -955,18 +829,18 @@ namespace OBeautifulCode.Database.Recipes.Test
             }
 
             // parameter datatypes are wrong
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // execute non-query works. returns number of rows affected
             sqlQueryParameterized = "Update [StockQuotes] Set [Symbol] = @newSymbol Where [Date] = @date and [Symbol] = @oldSymbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (SqlTransaction transaction = sqlConnection.BeginTransaction())
                 {
@@ -974,7 +848,7 @@ namespace OBeautifulCode.Database.Recipes.Test
                     const string VerifyInsertSql = "Select [Open] From [StockQuotes] Where [Symbol] = @symbol and [Date] = @date";
                     var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                     var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
-                    using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, VerifyInsertSql, new[] { dateParamter, symbolParameter }, CommandType.Text, transaction, CommandBehavior.Default, true))
+                    using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, VerifyInsertSql, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, transaction, CommandBehavior.Default, true))
                     {
                         Assert.False(reader.Read());
                         reader.Close();
@@ -984,13 +858,13 @@ namespace OBeautifulCode.Database.Recipes.Test
                     dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                     var newSymbolParameter = new SqlParameter("@newSymbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
                     var oldSymbolParameter = new SqlParameter("@oldSymbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                    int rowsAffected = DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, new[] { dateParamter, newSymbolParameter, oldSymbolParameter }, CommandType.Text, transaction, true);
+                    int rowsAffected = DatabaseHelper.ExecuteNonQuery(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, newSymbolParameter, oldSymbolParameter }, CommandType.Text, transaction, true);
                     Assert.Equal(1, rowsAffected);
 
                     // verify
                     dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                     symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
-                    using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, VerifyInsertSql, new[] { dateParamter, symbolParameter }, CommandType.Text, transaction, CommandBehavior.Default, true))
+                    using (IDataReader reader = DatabaseHelper.ExecuteReader(sqlConnection, VerifyInsertSql, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, transaction, CommandBehavior.Default, true))
                     {
                         Assert.Equal(1, reader.FieldCount);
                         Assert.True(reader.Read());
@@ -1011,12 +885,12 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ExecuteNonQuery_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand
+            // not testing: all exceptions generated from BuildSqlCommand
             // not testing: all exceptions from OpenConnection
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQuery(this.ConnectionString, "Insert Into "));
             Assert.Equal("Incorrect syntax near 'Into'.", actualException.Message);
 
             // execute non-query works. returns number of rows affected
@@ -1026,7 +900,7 @@ namespace OBeautifulCode.Database.Recipes.Test
                 const string VerifyInsertSql = "Select [Open] From [StockQuotes] Where [Symbol] = @symbol and [Date] = @date";
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
-                using (IDataReader reader = DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, VerifyInsertSql, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true))
+                using (IDataReader reader = DatabaseHelper.ExecuteReader(this.ConnectionString, VerifyInsertSql, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true))
                 {
                     Assert.False(reader.Read());
                     reader.Close();
@@ -1037,13 +911,13 @@ namespace OBeautifulCode.Database.Recipes.Test
                 dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var newSymbolParameter = new SqlParameter("@newSymbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
                 var oldSymbolParameter = new SqlParameter("@oldSymbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                int rowsAffected = DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, SqlInsertParameterized, new[] { dateParamter, newSymbolParameter, oldSymbolParameter }, CommandType.Text, true, 30);
+                int rowsAffected = DatabaseHelper.ExecuteNonQuery(this.ConnectionString, SqlInsertParameterized, 30, new[] { dateParamter, newSymbolParameter, oldSymbolParameter }, CommandType.Text, true);
                 Assert.Equal(1, rowsAffected);
 
                 // verify
                 dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "newsymbol" };
-                using (IDataReader reader = DatabaseHelper.ExecuteReader<SqlConnection>(this.ConnectionString, VerifyInsertSql, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true))
+                using (IDataReader reader = DatabaseHelper.ExecuteReader(this.ConnectionString, VerifyInsertSql, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true))
                 {
                     Assert.Equal(1, reader.FieldCount);
                     Assert.True(reader.Read());
@@ -1056,15 +930,15 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void CommandHasRows_ConnectionObjectProvided_MonolithicTest()
+        public void HasAtLeastOneRowWhenReading_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.CommandHasRows(sqlConnection, "Select * "));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1072,85 +946,85 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter datatypes are wrong
             const string SqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.CommandHasRows(sqlConnection, SqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // command produces no rows
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2012, 2, 12) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Assert.False(DatabaseHelper.CommandHasRows(sqlConnection, SqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, null, true));
+                Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 sqlConnection.Close();
             }
 
             // command produces 1 row
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Assert.True(DatabaseHelper.CommandHasRows(sqlConnection, SqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, null, true));
+                Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, SqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 sqlConnection.Close();
             }
 
             // command produces many rows
             const string SqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] > '1/5/2009' AND [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                Assert.True(DatabaseHelper.CommandHasRows(sqlConnection, SqlQueryNonParameterized));
+                Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, SqlQueryNonParameterized));
                 sqlConnection.Close();
             }
         }
 
         [Fact]
-        public void CommandHasRows_ConnectionStringProvided_MonolithicTest()
+        public void HasAtLeastOneRowWhenReading_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "SELECT * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, "SELECT * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date AND [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // command produces no rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] >= @date AND [Symbol] = @symbol Order By [Date]";
             dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2012, 3, 12) };
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, true));
+            Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
 
             // command produces 1 row
             dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }, CommandType.Text, true));
+            Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
 
             // command produces many rows
             const string SqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] > '1/5/2009' AND [Symbol] = 'msft'";
-            Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, SqlQueryNonParameterized, null, CommandType.Text, true));
+            Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, SqlQueryNonParameterized, 30, null, CommandType.Text, CommandBehavior.CloseConnection, true));
         }
 
         [Fact]
         public void ReadSingleColumn_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
@@ -1160,18 +1034,18 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // two columns returned instead of one, with no rows
             string sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in more than one column.", actualException.Message);
@@ -1180,7 +1054,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns returned, with rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in more than one column.", actualException.Message);
@@ -1189,18 +1063,18 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one column with no rows returned
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized));
-                Assert.Equal("Query results in no rows.", actualException.Message);
+                var emptyResult =  DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized);
+                Assert.Empty(emptyResult);
                 sqlConnection.Close();
             }
 
             // one column, one row
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                Collection<object> values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryNonParameterized);
                 Assert.Single(values);
                 Assert.IsType<decimal>(values[0]);
                 Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1209,10 +1083,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Collection<object> values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true, 30);
+                var values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(2, values.Count);
                 Assert.IsType<decimal>(values[0]);
                 Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1223,10 +1097,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one column three rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Collection<object> values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true, 30);
+                var values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(3, values.Count);
                 Assert.IsType<decimal>(values[0]);
                 Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1239,10 +1113,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // column contains null
             sqlQueryParameterized = "Select [OpenInterest] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Collection<object> values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true, 30);
+                var values = DatabaseHelper.ReadSingleColumn(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(3, values.Count);
                 Assert.Null(values[0]);
                 Assert.Null(values[1]);
@@ -1254,15 +1128,15 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ReadSingleColumn_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, "Select * "));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn(this.ConnectionString, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1272,27 +1146,27 @@ namespace OBeautifulCode.Database.Recipes.Test
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // two columns returned instead of one, with no rows
             string sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in more than one column.", actualException.Message);
 
             // two columns returned, with rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in more than one column.", actualException.Message);
 
             // one column with no rows returned
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
-            Assert.Equal("Query results in no rows.", actualException.Message);
+            var emptyResult = DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryNonParameterized);
+            Assert.Empty(emptyResult);
 
             // one column, one row
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            Collection<object> values = DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
+            var values = DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Single(values);
             Assert.IsType<decimal>(values[0]);
             Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1300,7 +1174,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true);
+            values = DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(2, values.Count);
             Assert.IsType<decimal>(values[0]);
             Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1310,7 +1184,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one column three rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true, 30);
+            values = DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(3, values.Count);
             Assert.IsType<decimal>(values[0]);
             Assert.Equal(19.4519m, (decimal)values[0]);
@@ -1322,7 +1196,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // column contains null values
             sqlQueryParameterized = "Select [OpenInterest] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleColumn<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true, 30);
+            values = DatabaseHelper.ReadSingleColumn(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(3, values.Count);
             Assert.Null(values[0]);
             Assert.Null(values[1]);
@@ -1332,12 +1206,12 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ReadSingleValue_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
@@ -1347,18 +1221,18 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // one column with no rows returned
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
@@ -1367,7 +1241,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns returned instead of one, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
@@ -1376,7 +1250,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns returned, 1 row
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in more than one column.", actualException.Message);
@@ -1385,7 +1259,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns returned, 2 rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date]='1/6/2009' ) And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in more than one column.", actualException.Message);
@@ -1394,17 +1268,17 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // one column, one row
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 object value = DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized);
                 Assert.IsType<decimal>(value);
@@ -1414,7 +1288,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // null value
             sqlQueryNonParameterized = "Select [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 object value = DatabaseHelper.ReadSingleValue(sqlConnection, sqlQueryNonParameterized);
                 Assert.Null(value);
@@ -1424,63 +1298,63 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ReadSingleValue_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, "Select * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, "Select * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // one column with no rows returned
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns returned instead of one, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns returned, 1 row
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in more than one column.", actualException.Message);
 
             // two columns returned, 2 rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date]='1/6/2009' ) And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in more than one column.", actualException.Message);
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // one column, one row
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            object value = DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
+            object value = DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized);
             Assert.IsType<decimal>(value);
             Assert.Equal(19.4519m, (decimal)value);
 
             // null value
             sqlQueryNonParameterized = "Select [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            value = DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
+            value = DatabaseHelper.ReadSingleValue(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Null(value);
         }
 
         [Fact]
         public void RollbackTransaction_MonolithicTest()
         {
-            using (var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (SqlTransaction transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -1493,7 +1367,7 @@ namespace OBeautifulCode.Database.Recipes.Test
                 }
             }
 
-            using (var connection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var connection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (SqlTransaction transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted))
                 {
@@ -1510,12 +1384,12 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ReadSingleRow_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
 
             // exception executing command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
@@ -1525,18 +1399,18 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // one column returned with no rows
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
@@ -1545,7 +1419,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns returned, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
@@ -1554,48 +1428,48 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // two columns with same name returned
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
-                Assert.Equal("Query results in two columns with the same name.", actualException.Message);
+                Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // two columns, two rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // two columns, three rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
 
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                Dictionary<string, object> values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized);
                 Assert.Single(values);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1605,10 +1479,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one row two columns
             sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Dictionary<string, object> values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true, 30);
+                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(2, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1621,10 +1495,10 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one row three columns, one has null value
             sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                Dictionary<string, object> values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, null, true, 30);
+                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(3, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1641,57 +1515,57 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ReadSingleRow_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, "Select * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, "Select * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // one column returned with no rows
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns returned, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns with same name returned
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized));
-            Assert.Equal("Query results in two columns with the same name.", actualException.Message);
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
+            Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, two rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, three rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            Dictionary<string, object> values = DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryNonParameterized);
+            var values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Single(values);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1700,7 +1574,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row two columns
             sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true, 30);
+            values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(2, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1712,7 +1586,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row three columns, one has null value
             sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRow<SqlConnection>(this.ConnectionString, sqlQueryParameterized, new[] { symbolParameter }, CommandType.Text, true, 30);
+            values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(3, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1727,61 +1601,61 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void WriteToCsv_ConnectionStringProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // null or whitespace outputFilePath
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [Test]", null));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [Test]", string.Empty));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [Test]", "   "));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [Test]", "  \r\n   "));
+            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [Test]", null));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [Test]", string.Empty));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [Test]", "   "));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [Test]", "  \r\n   "));
 
             // IOException
             string tempFilePath = Path.GetTempFileName();
             using (new FileStream(tempFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
             {
-                Assert.Throws<IOException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [Test]", tempFilePath));
+                Assert.Throws<IOException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [Test]", tempFilePath));
             }
 
             // UnauthorizedAccessException & SecurityException - no good way to test this
             // Non-query
-            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Update [DBHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
+            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv(this.ConnectionString, "Update [DBHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
 
             // no results - just headers are printed
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'bla'", tempFilePath);
+            DatabaseHelper.WriteToCsv(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'bla'", tempFilePath);
             Assert.Equal("Id,Date,Value,\"Csv,Test\"", File.ReadAllText(tempFilePath), StringComparer.CurrentCulture);
 
             // header + one row
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
+            if (!DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
+                DatabaseHelper.ExecuteNonQuery(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
-            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
+            DatabaseHelper.WriteToCsv(this.ConnectionString, "Select [Date],[Value],[Csv,Test] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
+            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
 
             // header + one row with csv-treatment
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
+            if (!DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
+                DatabaseHelper.ExecuteNonQuery(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
-            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+            DatabaseHelper.WriteToCsv(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
 
             // header + two rows
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
-            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+            DatabaseHelper.WriteToCsv(this.ConnectionString, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
+            Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
 
             // header + three rows
-            if (!DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
+            if (!DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
             {
-                DatabaseHelper.ExecuteNonQuery<SqlConnection>(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
+                DatabaseHelper.ExecuteNonQuery(this.ConnectionString, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
             }
 
-            DatabaseHelper.WriteToCsv<SqlConnection>(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
-            Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
+            DatabaseHelper.WriteToCsv(this.ConnectionString, "Select [Csv,Test],[Date],[Value] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
+            Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817000,0.99929", File.ReadAllText(tempFilePath));
 
             // need to test char and char[] field types for csv-treatment
         }
@@ -1789,12 +1663,12 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void WriteToCsv_IDbConnectionProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand via ExecuteReader
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // null or whitespace outputFilePath
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 Assert.Throws<ArgumentNullException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [Test]", null));
                 Assert.Throws<ArgumentException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [Test]", string.Empty));
@@ -1806,7 +1680,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             string tempFilePath = Path.GetTempFileName();
             using (new FileStream(tempFilePath, FileMode.Open, FileAccess.Read, FileShare.None))
             {
-                using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+                using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
                 {
                     Assert.Throws<IOException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [Test]", tempFilePath));
                 }
@@ -1814,68 +1688,68 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // UnauthorizedAccessException & SecurityException - no good way to test this
             // Non-query
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 Assert.Throws<InvalidOperationException>(() => DatabaseHelper.WriteToCsv(sqlConnection, "Update [DBHelper] Set [Csv,Test] = 'bla' Where [Csv,Test] = 'bla'", tempFilePath));
             }
 
             // no results - just headers are printed
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 DatabaseHelper.WriteToCsv(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'bla'", tempFilePath);
                 Assert.Equal("Id,Date,Value,\"Csv,Test\"", File.ReadAllText(tempFilePath), StringComparer.CurrentCulture);
             }
 
             // header + one row
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
+                if (!DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest1'"))
                 {
                     DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-08-14',49.21,'writetocsvtest1')");
                 }
             }
 
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1'", tempFilePath);
-                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000000,49.21000,writetocsvtest1", File.ReadAllText(tempFilePath));
             }
 
             // header + one row with csv-treatment
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
+                if (!DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'"))
                 {
                     DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('2010-04-12',32.001,'writetocsv\"test\"2')");
                 }
             }
 
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
-                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-04-12 00:00:00.000000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
             }
 
             // header + two rows
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 DatabaseHelper.WriteToCsv(sqlConnection, "Select [Date],[Value],[Csv,Test] From [DBHelper] Where [Csv,Test] = 'writetocsvtest1' OR [Csv,Test] = 'writetocsv\"test\"2'", tempFilePath);
-                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
+                Assert.Equal("Date,Value,\"Csv,Test\"" + Environment.NewLine + "2010-08-14 00:00:00.000000,49.21000,writetocsvtest1" + Environment.NewLine + "2010-04-12 00:00:00.000000,32.00100,\"writetocsv\"\"test\"\"2\"", File.ReadAllText(tempFilePath));
             }
 
             // header + three rows
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                if (!DatabaseHelper.CommandHasRows(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
+                if (!DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, "Select * From [DBHelper] Where [Csv,Test] = 'writetocsvtest3'"))
                 {
                     DatabaseHelper.ExecuteNonQuery(sqlConnection, "Insert Into [DBHelper] ([Date],[Value],[Csv,Test]) Values ('1998-03-02 15:58:47.817',0.99929,'writetocsvtest3')");
                 }
             }
 
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 DatabaseHelper.WriteToCsv(sqlConnection, "Select [Csv,Test],[Date],[Value] FROM [DBHelper] Where [Csv,Test] = 'writetocsvtest1' Or [Csv,Test] = 'writetocsv\"test\"2' Or [Csv,Test] = 'writetocsvtest3'", tempFilePath);
-                Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817,0.99929", File.ReadAllText(tempFilePath));
+                Assert.Equal("\"Csv,Test\",Date,Value" + Environment.NewLine + "writetocsvtest1,2010-08-14 00:00:00.000000,49.21000" + Environment.NewLine + "\"writetocsv\"\"test\"\"2\",2010-04-12 00:00:00.000000,32.00100" + Environment.NewLine + "writetocsvtest3,1998-03-02 15:58:47.817000,0.99929", File.ReadAllText(tempFilePath));
             }
 
             // need to test char and char[] field types for csv-treatment
@@ -1884,12 +1758,12 @@ namespace OBeautifulCode.Database.Recipes.Test
         [Fact]
         public void ExecuteNonQueryBatch_ConnectionObjectProvided_MonolithicTest()
         {
-            // not testing: all exceptions generated from BuildCommand
+            // not testing: all exceptions generated from BuildSqlCommand
             // not testing: all exceptions generated from ExecuteNonQuery
             // batch command text is null or empty
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                Assert.Throws<ArgumentNullException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, null, null, 30));
+                Assert.Throws<ArgumentNullException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, null, 30, null));
                 Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Empty));
                 Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, "    "));
                 Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, "  \r\n   "));
@@ -1900,72 +1774,72 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // bad sqlCommand (date missing) - single command
             Exception actualException;
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "Insert Into [DBHelper] ([Value]) Values (1.234)";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, SqlCommand));
                 Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DbHelper"), actualException.Message);
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // bad sqlCommand - first command
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
                 Assert.Equal("Could not find stored procedure 'asdfasdf'.", actualException.Message);
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // bad sqlCommand - second command (in transaction so rolled back)
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 using (var sqlTransaction = sqlConnection.BeginTransaction())
                 {
                     const string SqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
-                    actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp), sqlTransaction));
+                    actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp), 30, sqlTransaction));
                     Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-                    Assert.True(DatabaseHelper.CommandHasRows(sqlConnection, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp), null, CommandType.Text, sqlTransaction));
+                    Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(sqlConnection, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp), 30, null, CommandType.Text, sqlTransaction));
                     sqlTransaction.Rollback();
                 }
 
-                Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // bad sqlCommand - second command
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
                 actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
                 Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-                Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // good sqlCommand - batch contains only one statement
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "Update [DBHelper] Set [Value] = 5 Where [Date]='{0}'";
-                Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)).Sum());
+                Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // good sqlCommand with multiple statements
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "Update [DBHelper] Set [Value] = 4 Where [Date]='{0}'\r\nGO\r\nUpdate [DBHelper] Set [Csv,Test] = 'whatever' Where [Date]='{0}'\r\nGO\r\n";
-                Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)));
-                Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
-                Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, string.Format(CultureInfo.CurrentCulture, SqlCommand, timeStamp)).Sum());
+                Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+                Assert.Equal("whatever", DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
                 sqlConnection.Close();
             }
 
             // empty batch, nothing happens.
-            using (var sqlConnection = DatabaseHelper.OpenConnection<SqlConnection>(this.ConnectionString))
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 const string SqlCommand = "\r\nGO\r\n\r\nGO";
                 Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ExecuteNonQueryBatch(sqlConnection, SqlCommand));
@@ -1977,49 +1851,49 @@ namespace OBeautifulCode.Database.Recipes.Test
         public void ExecuteNonQueryBatch_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: From OpenConnection via ExecuteNonQuery
-            // not testing: From BuildCommand via ExecuteNonQuery
+            // not testing: From BuildSqlCommand via ExecuteNonQuery
             // not testing: From ExecuteNonQuery
 
             // batch command text is null or empty
-            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, null, 30));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Empty, 30));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, "    ", 30));
-            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, "  \r\n  ", 30));
+            Assert.Throws<ArgumentNullException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, null, 30));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, string.Empty, 30));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, "    ", 30));
+            Assert.Throws<ArgumentException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, "  \r\n  ", 30));
 
             string timeStamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss:fff", CultureInfo.CurrentCulture);
 
             // bad sqlCommand (date missing) - single command
             string sqlCommand = "Insert Into [DBHelper] ([Value]) Values (1.234)";
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, sqlCommand, 30));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, sqlCommand, 30));
             Assert.Equal(string.Format("Cannot insert the value NULL into column 'Date', table '{0}'; column does not allow nulls. INSERT fails.\r\nThe statement has been terminated.", this.DatabaseName + ".dbo.DbHelper"), actualException.Message);
-            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // bad sqlCommand - first command
             sqlCommand = "asdfasdf\r\nGO\r\nInsert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)";
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
             Assert.Equal("Could not find stored procedure 'asdfasdf'.", actualException.Message);
-            Assert.False(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.False(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // bad sqlCommand - second command
             sqlCommand = "Insert Into [DBHelper] ([Date],[Value]) Values ('{0}',3)\r\nGO\r\nasdfasd";
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
             Assert.Equal("Could not find stored procedure 'asdfasd'.", actualException.Message);
-            Assert.True(DatabaseHelper.CommandHasRows<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.True(DatabaseHelper.HasAtLeastOneRowWhenReading(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select * From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // good sqlCommand - batch contains only one statement
             sqlCommand = "UPDATE [DBHelper] Set [Value] =5 WHERE [Date]='{0}'";
-            Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal(1, DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30).Sum());
+            Assert.Equal(5.00000M, DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // good sqlCommand with multiple statements
             sqlCommand = "UPDATE [DBHelper] Set [Value] = 4 WHERE [Date]='{0}'\r\nGO\r\nUPDATE [DBHelper] Set [Csv,Test] = 'whatever' WHERE [Date]='{0}'\r\nGO\r\n";
-            Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30));
-            Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
-            Assert.Equal("whatever", DatabaseHelper.ReadSingleValue<SqlConnection>(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal(2, DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, sqlCommand, timeStamp), 30).Sum());
+            Assert.Equal(4.00000M, DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Value] From [DBHelper] Where [Date]='{0}'", timeStamp)));
+            Assert.Equal("whatever", DatabaseHelper.ReadSingleValue(this.ConnectionString, string.Format(CultureInfo.CurrentCulture, "Select [Csv,Test] From [DBHelper] Where [Date]='{0}'", timeStamp)));
 
             // empty batch, nothing happens.
             sqlCommand = "\r\nGO\r\n\r\nGO";
-            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ExecuteNonQueryBatch<SqlConnection>(this.ConnectionString, sqlCommand));
+            Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ExecuteNonQueryBatch(this.ConnectionString, sqlCommand));
         }
 
         /// <summary>
