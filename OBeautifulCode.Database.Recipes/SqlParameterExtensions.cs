@@ -1334,7 +1334,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             new { name }.AsArg().Must().NotBeNullNorWhiteSpace();
 
-            var nameWithoutAtSymbol = name.StartsWith("@") ? name.Substring(1) : name;
+            var nameWithoutAtSymbol = name.StartsWith("@", StringComparison.OrdinalIgnoreCase) ? name.Substring(1) : name;
 
             if (!nameWithoutAtSymbol.IsAlphanumeric())
             {

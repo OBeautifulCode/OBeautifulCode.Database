@@ -21,6 +21,7 @@ namespace OBeautifulCode.Database.Recipes
 
     using OBeautifulCode.Assertion.Recipes;
     using OBeautifulCode.Collection.Recipes;
+    using OBeautifulCode.Database.Recipes.Internal;
     using OBeautifulCode.String.Recipes;
 
     using static System.FormattableString;
@@ -44,6 +45,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// An open SQL Server connection.
         /// </returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = ObcSuppressBecause.CA2000_DisposeObjectsBeforeLosingScope_DisposableObjectIsMethodReturnObject)]
         public static SqlConnection OpenSqlConnection(
             this string connectionString)
         {
@@ -203,6 +205,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// A constructed <see cref="SqlDataReader"/>.
         /// </returns>
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = ObcSuppressBecause.CA2000_DisposeObjectsBeforeLosingScope_MethodCreatesDisposableObjectButItCannotBeDisposedBecauseReturnObjectRequiresDisposableObjectToBeFullyIntact)]
         public static SqlDataReader ExecuteReader(
             this string connectionString,
             string commandText,
@@ -346,6 +349,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// The number of rows affected.
         /// </returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = ObcSuppressBecause.CA2202_DoNotDisposeObjectsMultipleTimes_AnalyzerIsIncorrectlyFlaggingObjectAsBeingDisposedMultipleTimes)]
         public static int ExecuteNonQuery(
             this string connectionString,
             string commandText,
@@ -467,6 +471,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// The number of rows affected for each individual command that is executed.
         /// </returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = ObcSuppressBecause.CA2202_DoNotDisposeObjectsMultipleTimes_AnalyzerIsIncorrectlyFlaggingObjectAsBeingDisposedMultipleTimes)]
         public static IReadOnlyList<int> ExecuteNonQueryBatch(
             this string connectionString,
             string batchCommandText,
@@ -618,6 +623,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// true if executing the command results in at least one row of data; otherwise false.
         /// </returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = ObcSuppressBecause.CA2202_DoNotDisposeObjectsMultipleTimes_AnalyzerIsIncorrectlyFlaggingObjectAsBeingDisposedMultipleTimes)]
         public static bool HasAtLeastOneRowWhenReading(
             this string connectionString,
             string commandText,
@@ -652,6 +658,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// true if executing the command results in at least one row of data; otherwise false.
         /// </returns>
+        [SuppressMessage("Microsoft.Usage", "CA2202:Do not dispose objects multiple times", Justification = ObcSuppressBecause.CA2202_DoNotDisposeObjectsMultipleTimes_AnalyzerIsIncorrectlyFlaggingObjectAsBeingDisposedMultipleTimes)]
         public static bool HasAtLeastOneRowWhenReading(
             this SqlConnection connection,
             string commandText,
