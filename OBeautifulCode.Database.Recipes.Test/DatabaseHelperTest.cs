@@ -1599,6 +1599,223 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
+        public void ReadSingleRowOrDefault_ConnectionObjectProvided_MonolithicTest()
+        {
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
+            // not testing: all exceptions from ExecuteReader
+
+            // exception executing command
+            Exception actualException;
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, "Select * "));
+                Assert.Equal("Must specify table to select from.", actualException.Message);
+                Assert.Equal(ConnectionState.Open, sqlConnection.State);
+                sqlConnection.Close();
+            }
+
+            // parameter datatypes are wrong
+            string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+                Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
+                sqlConnection.Close();
+            }
+
+            // one column returned with no rows
+            string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                Assert.Null(values);
+                sqlConnection.Close();
+            }
+
+            // two columns returned, with no rows
+            sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                Assert.Null(values);
+                sqlConnection.Close();
+            }
+
+            // two columns with same name returned
+            sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized));
+                Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
+                sqlConnection.Close();
+            }
+
+            // one column, two rows
+            sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                Assert.Equal("Query results in more than one row.", actualException.Message);
+                sqlConnection.Close();
+            }
+
+            // two columns, two rows
+            sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                Assert.Equal("Query results in more than one row.", actualException.Message);
+                sqlConnection.Close();
+            }
+
+            // two columns, three rows
+            sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                Assert.Equal("Query results in more than one row.", actualException.Message);
+                sqlConnection.Close();
+            }
+
+            // one row one column
+            sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                Assert.Single(values);
+                Assert.True(values.ContainsKey("open"));
+                Assert.IsType<decimal>(values["open"]);
+                Assert.Equal(19.4519m, (decimal)values["open"]);
+                sqlConnection.Close();
+            }
+
+            // one row two columns
+            sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                Assert.Equal(2, values.Count);
+                Assert.True(values.ContainsKey("open"));
+                Assert.IsType<decimal>(values["open"]);
+                Assert.Equal(19.4519m, (decimal)values["open"]);
+                Assert.True(values.ContainsKey("high"));
+                Assert.IsType<decimal>(values["high"]);
+                Assert.Equal(19.9044m, (decimal)values["high"]);
+                sqlConnection.Close();
+            }
+
+            // one row three columns, one has null value
+            sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
+            using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
+            {
+                var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                Assert.Equal(3, values.Count);
+                Assert.True(values.ContainsKey("open"));
+                Assert.IsType<decimal>(values["open"]);
+                Assert.Equal(19.4519m, (decimal)values["open"]);
+                Assert.True(values.ContainsKey("high"));
+                Assert.IsType<decimal>(values["high"]);
+                Assert.Equal(19.9044m, (decimal)values["high"]);
+                Assert.True(values.ContainsKey("openinterest"));
+                Assert.Null(values["openinterest"]);
+                sqlConnection.Close();
+            }
+        }
+
+        [Fact]
+        public void ReadSingleRowOrDefault_ConnectionStringProvided_MonolithicTest()
+        {
+            // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
+            // not testing: all exceptions from OpenConnection via ExecuteReader
+            // not testing: all exceptions generated from ExecuteReader with connection
+
+            // exception executing command
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, "Select * "));
+            Assert.Equal("Must specify table to select from.", actualException.Message);
+
+            // parameter datatypes are wrong
+            string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
+            var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
+            var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+            Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
+
+            // one column returned with no rows
+            string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
+            var values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            Assert.Null(values);
+
+            // two columns returned, with no rows
+            sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
+            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            Assert.Null(values);
+
+            // two columns with same name returned
+            sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized));
+            Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
+
+            // one column, two rows
+            sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
+            symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            Assert.Equal("Query results in more than one row.", actualException.Message);
+
+            // two columns, two rows
+            sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
+            symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            Assert.Equal("Query results in more than one row.", actualException.Message);
+
+            // two columns, three rows
+            sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
+            symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            Assert.Equal("Query results in more than one row.", actualException.Message);
+
+            // one row one column
+            sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
+            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            Assert.Single(values);
+            Assert.True(values.ContainsKey("open"));
+            Assert.IsType<decimal>(values["open"]);
+            Assert.Equal(19.4519m, (decimal)values["open"]);
+
+            // one row two columns
+            sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
+            symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            Assert.Equal(2, values.Count);
+            Assert.True(values.ContainsKey("open"));
+            Assert.IsType<decimal>(values["open"]);
+            Assert.Equal(19.4519m, (decimal)values["open"]);
+            Assert.True(values.ContainsKey("high"));
+            Assert.IsType<decimal>(values["high"]);
+            Assert.Equal(19.9044m, (decimal)values["high"]);
+
+            // one row three columns, one has null value
+            sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
+            symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
+            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            Assert.Equal(3, values.Count);
+            Assert.True(values.ContainsKey("open"));
+            Assert.IsType<decimal>(values["open"]);
+            Assert.Equal(19.4519m, (decimal)values["open"]);
+            Assert.True(values.ContainsKey("high"));
+            Assert.IsType<decimal>(values["high"]);
+            Assert.Equal(19.9044m, (decimal)values["high"]);
+            Assert.True(values.ContainsKey("openinterest"));
+            Assert.Null(values["openinterest"]);
+        }
+
+        [Fact]
         public void WriteToCsv_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader

@@ -1114,7 +1114,41 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
             {
-                var result = reader.ReadSingleRowInternal();
+                var result = reader.ReadSingleRowInternal(throwIfNoRows: true);
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Opens a connection to the database, executes the <paramref name="commandText"/> against the connection, and returns a single row of values.
+        /// Throws if there are multiple rows or multiple columns with the same case-insensitive name.
+        /// </summary>
+        /// <remarks>
+        /// Sets CommandBehavior = CommandBehavior.CloseConnection so that the created connection is closed when the data reader is closed.
+        /// </remarks>
+        /// <param name="connectionString">String used to open a connection to the database.</param>
+        /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
+        /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
+        /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
+        /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
+        /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <returns>
+        /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
+        /// </returns>
+        public static IReadOnlyDictionary<string, object> ReadSingleRowOrDefault(
+            this string connectionString,
+            string commandText,
+            int commandTimeoutInSeconds = 30,
+            IReadOnlyList<SqlParameter> commandParameters = null,
+            CommandType commandType = CommandType.Text,
+            CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
+            bool prepareCommand = false)
+        {
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            {
+                var result = reader.ReadSingleRowInternal(throwIfNoRows: false);
 
                 return result;
             }
@@ -1147,7 +1181,40 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = reader.ReadSingleRowInternal();
+                var result = reader.ReadSingleRowInternal(throwIfNoRows: true);
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="commandText"/> against the <paramref name="connection"/> and returns a single row of values.
+        /// Throws if there are multiple rows or multiple columns with the same case-insensitive name.
+        /// </summary>
+        /// <param name="connection">An open connection to the database.</param>
+        /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
+        /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
+        /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
+        /// <param name="transaction">OPTIONAL transaction within which the command will execute.  DEFAULT is null (no transaction).</param>
+        /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
+        /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <returns>
+        /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
+        /// </returns>
+        public static IReadOnlyDictionary<string, object> ReadSingleRowOrDefault(
+            this SqlConnection connection,
+            string commandText,
+            int commandTimeoutInSeconds = 30,
+            IReadOnlyList<SqlParameter> commandParameters = null,
+            CommandType commandType = CommandType.Text,
+            SqlTransaction transaction = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            bool prepareCommand = false)
+        {
+            using (var reader = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
+            {
+                var result = reader.ReadSingleRowInternal(throwIfNoRows: false);
 
                 return result;
             }
@@ -1181,7 +1248,41 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
             {
-                var result = await reader.ReadSingleRowInternalAsync();
+                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: true);
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Opens a connection to the database, executes the <paramref name="commandText"/> against the connection, and returns a single row of values.
+        /// Throws if there are multiple rows or multiple columns with the same case-insensitive name.
+        /// </summary>
+        /// <remarks>
+        /// Sets CommandBehavior = CommandBehavior.CloseConnection so that the created connection is closed when the data reader is closed.
+        /// </remarks>
+        /// <param name="connectionString">String used to open a connection to the database.</param>
+        /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
+        /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
+        /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
+        /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
+        /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <returns>
+        /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
+        /// </returns>
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowOrDefaultAsync(
+            this string connectionString,
+            string commandText,
+            int commandTimeoutInSeconds = 30,
+            IReadOnlyList<SqlParameter> commandParameters = null,
+            CommandType commandType = CommandType.Text,
+            CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
+            bool prepareCommand = false)
+        {
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            {
+                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: false);
 
                 return result;
             }
@@ -1214,7 +1315,40 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = await reader.ReadSingleRowInternalAsync();
+                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: true);
+
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Executes the <paramref name="commandText"/> against the <paramref name="connection"/> and returns a single row of values.
+        /// Throws if there are multiple rows or multiple columns with the same case-insensitive name.
+        /// </summary>
+        /// <param name="connection">An open connection to the database.</param>
+        /// <param name="commandText">The SQL statement, table name, or stored procedure to execute at the data source.</param>
+        /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
+        /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
+        /// <param name="transaction">OPTIONAL transaction within which the command will execute.  DEFAULT is null (no transaction).</param>
+        /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
+        /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <returns>
+        /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
+        /// </returns>
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowOrDefaultAsync(
+            this SqlConnection connection,
+            string commandText,
+            int commandTimeoutInSeconds = 30,
+            IReadOnlyList<SqlParameter> commandParameters = null,
+            CommandType commandType = CommandType.Text,
+            SqlTransaction transaction = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            bool prepareCommand = false)
+        {
+            using (var reader = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
+            {
+                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: false);
 
                 return result;
             }
@@ -1544,16 +1678,23 @@ namespace OBeautifulCode.Database.Recipes
         }
 
         private static IReadOnlyDictionary<string, object> ReadSingleRowInternal(
-            this SqlDataReader reader)
+            this SqlDataReader reader,
+            bool throwIfNoRows)
         {
             try
             {
                 if (!reader.Read())
                 {
-                    throw new InvalidOperationException("Query results in no rows.");
+                    if (throwIfNoRows)
+                    {
+                        throw new InvalidOperationException("Query results in no rows.");
+                    }
+
+                    return null;
                 }
 
                 var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
 
                 for (var x = 0; x < reader.FieldCount; x++)
                 {
@@ -1581,16 +1722,22 @@ namespace OBeautifulCode.Database.Recipes
         }
 
         private static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowInternalAsync(
-            this SqlDataReader reader)
+            this SqlDataReader reader,
+            bool throwIfNoRows)
         {
             try
             {
+                var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+
                 if (!(await reader.ReadAsync()))
                 {
-                    throw new InvalidOperationException("Query results in no rows.");
-                }
+                    if (throwIfNoRows)
+                    {
+                        throw new InvalidOperationException("Query results in no rows.");
+                    }
 
-                var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    return null;
+                }
 
                 for (var x = 0; x < reader.FieldCount; x++)
                 {
