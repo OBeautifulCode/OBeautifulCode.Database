@@ -9,26 +9,26 @@
 
 namespace OBeautifulCode.Database.Recipes
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Data;
-    using System.Data.SqlClient;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Threading.Tasks;
+    using global::System;
+    using global::System.Collections.Generic;
+    using global::System.Data;
+    using global::System.Data.SqlClient;
+    using global::System.Diagnostics.CodeAnalysis;
+    using global::System.Globalization;
+    using global::System.IO;
+    using global::System.Linq;
+    using global::System.Threading.Tasks;
 
+    using OBeautifulCode.CodeAnalysis.Recipes;
     using OBeautifulCode.Collection.Recipes;
-    using OBeautifulCode.Database.Recipes.Internal;
     using OBeautifulCode.String.Recipes;
 
-    using static System.FormattableString;
+    using static global::System.FormattableString;
 
     /// <summary>
     /// Provides various methods for interacting with a database.
     /// </summary>
-#if !OBeautifulCodeDatabaseRecipesProject
+#if !OBeautifulCodeDatabaseSolution
     [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Database.Recipes", "See package version number")]
     internal
