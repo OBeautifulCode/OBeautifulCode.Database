@@ -17,5 +17,6 @@
     <file src="DatabaseHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
     <file src="SqlParameterExtensions.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlParameterExtensions.cs" />
     <file src="SqlBatchStatementSplitter.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
+    <file src="ConnectionStringHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\ConnectionStringHelper.cs" />
   </files>
 </package>
