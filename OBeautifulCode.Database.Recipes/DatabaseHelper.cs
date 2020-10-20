@@ -41,12 +41,14 @@ namespace OBeautifulCode.Database.Recipes
         /// Opens a SQL Server database connection using a connection string.
         /// </summary>
         /// <param name="connectionString">String used to open a connection to the database.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// An open SQL Server connection.
         /// </returns>
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = ObcSuppressBecause.CA2000_DisposeObjectsBeforeLosingScope_DisposableObjectIsMethodReturnObject)]
         public static SqlConnection OpenSqlConnection(
-            this string connectionString)
+            this string connectionString,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (connectionString == null)
             {
@@ -65,6 +67,11 @@ namespace OBeautifulCode.Database.Recipes
                 // an invalid connectionString will throw ArgumentException.
                 result = new SqlConnection { ConnectionString = connectionString };
 
+                if (sqlInfoMessageEventHandler != null)
+                {
+                    result.InfoMessage += sqlInfoMessageEventHandler;
+                }
+
                 // InvalidOperationException won't be thrown, even if data source or server aren't specified
                 // in the connection string.  as long as the connection string is valid,
                 // the only possible exception is SqlException
@@ -72,7 +79,22 @@ namespace OBeautifulCode.Database.Recipes
             }
             catch (Exception)
             {
-                result?.Dispose();
+                if (result != null)
+                {
+                    // attempt to gracefully detach the event handler (if applicable) before disposing
+                    if (sqlInfoMessageEventHandler != null)
+                    {
+                        try
+                        {
+                            result.InfoMessage -= sqlInfoMessageEventHandler;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+
+                    result.Dispose();
+                }
 
                 throw;
             }
@@ -84,11 +106,13 @@ namespace OBeautifulCode.Database.Recipes
         /// Opens a SQL Server database connection using a connection string.
         /// </summary>
         /// <param name="connectionString">String used to open a connection to the database.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// An open SQL Server connection.
         /// </returns>
         public static async Task<SqlConnection> OpenSqlConnectionAsync(
-            this string connectionString)
+            this string connectionString,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (connectionString == null)
             {
@@ -107,6 +131,11 @@ namespace OBeautifulCode.Database.Recipes
                 // an invalid connectionString will throw ArgumentException.
                 result = new SqlConnection { ConnectionString = connectionString };
 
+                if (sqlInfoMessageEventHandler != null)
+                {
+                    result.InfoMessage += sqlInfoMessageEventHandler;
+                }
+
                 // InvalidOperationException won't be thrown, even if data source or server aren't specified
                 // in the connection string.  as long as the connection string is valid,
                 // the only possible exception is SqlException
@@ -114,7 +143,22 @@ namespace OBeautifulCode.Database.Recipes
             }
             catch (Exception)
             {
-                result?.Dispose();
+                if (result != null)
+                {
+                    // attempt to gracefully detach the event handler (if applicable) before disposing
+                    if (sqlInfoMessageEventHandler != null)
+                    {
+                        try
+                        {
+                            result.InfoMessage -= sqlInfoMessageEventHandler;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+
+                    result.Dispose();
+                }
 
                 throw;
             }
@@ -238,6 +282,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <remarks>
         /// If an expected parameter type does not match an actual parameter value's type, ExecuteReader() does not throw <see cref="SqlException"/>.
         /// Instead, a reader with no rows is returned.  Any attempt to Read() will throw an exception.
@@ -253,14 +298,15 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (!commandBehavior.HasFlag(CommandBehavior.CloseConnection))
             {
                 throw new ArgumentException(Invariant($"{nameof(commandBehavior)} does not set the flag {CommandBehavior.CloseConnection}.  This will result in an open connection with the caller having no means of closing it."));
             }
 
-            var connection = OpenSqlConnection(connectionString);
+            var connection = OpenSqlConnection(connectionString, sqlInfoMessageEventHandler);
 
             var result = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, null, commandBehavior, prepareCommand);
 
@@ -313,6 +359,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <remarks>
         /// If an expected parameter type does not match an actual parameter value's type, ExecuteReader() does not throw <see cref="SqlException"/>.
         /// Instead, a reader with no rows is returned.  Any attempt to Read() will throw an exception.
@@ -327,14 +374,15 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (!commandBehavior.HasFlag(CommandBehavior.CloseConnection))
             {
                 throw new ArgumentException(Invariant($"{nameof(commandBehavior)} does not set the flag {CommandBehavior.CloseConnection}.  This will result in an open connection with the caller having no means of closing it."));
             }
 
-            var connection = await OpenSqlConnectionAsync(connectionString);
+            var connection = await OpenSqlConnectionAsync(connectionString, sqlInfoMessageEventHandler);
 
             var result = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, null, commandBehavior, prepareCommand);
 
@@ -386,6 +434,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The number of rows affected.
         /// </returns>
@@ -396,9 +445,10 @@ namespace OBeautifulCode.Database.Recipes
             int commandTimeoutInSeconds = 30,
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var connection = connectionString.OpenSqlConnection())
+            using (var connection = connectionString.OpenSqlConnection(sqlInfoMessageEventHandler))
             {
                 var result = connection.ExecuteNonQuery(commandText, commandTimeoutInSeconds, commandParameters, commandType, null, prepareCommand);
 
@@ -447,6 +497,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandParameters">OPTIONAL set of parameters to associate with the command.  DEFAULT is null (no parameters).</param>
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The number of rows affected.
         /// </returns>
@@ -456,9 +507,10 @@ namespace OBeautifulCode.Database.Recipes
             int commandTimeoutInSeconds = 30,
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var connection = await connectionString.OpenSqlConnectionAsync())
+            using (var connection = await connectionString.OpenSqlConnectionAsync(sqlInfoMessageEventHandler))
             {
                 var result = await connection.ExecuteNonQueryAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, null, prepareCommand);
 
@@ -504,6 +556,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="connectionString">String used to open a connection to the database.</param>
         /// <param name="batchCommandText">The batch SQL command to execute.</param>
         /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <remarks>
         /// This method does not support parameters.  Parameter object must be unique per command - parameters cannot be reused across commands.
         /// All commands in the batch are expected to be Text commands.
@@ -515,7 +568,8 @@ namespace OBeautifulCode.Database.Recipes
         public static IReadOnlyList<int> ExecuteNonQueryBatch(
             this string connectionString,
             string batchCommandText,
-            int commandTimeoutInSeconds = 30)
+            int commandTimeoutInSeconds = 30,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (batchCommandText == null)
             {
@@ -534,7 +588,7 @@ namespace OBeautifulCode.Database.Recipes
                 throw new InvalidOperationException(Invariant($"No individual commands found in {nameof(batchCommandText)}."));
             }
 
-            using (var connection = connectionString.OpenSqlConnection())
+            using (var connection = connectionString.OpenSqlConnection(sqlInfoMessageEventHandler))
             {
                 var result = connection.ExecuteNonQueryBatch(batchCommandText, commandTimeoutInSeconds);
 
@@ -599,6 +653,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="connectionString">String used to open a connection to the database.</param>
         /// <param name="batchCommandText">The batch SQL command to execute.</param>
         /// <param name="commandTimeoutInSeconds">OPTIONAL value with the wait time, in seconds, before terminating an attempt to execute the command and generating an error.  DEFAULT is 30 seconds.  A value of 0 indicates no limit (an attempt to execute a command will wait indefinitely).</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <remarks>
         /// This method does not support parameters.  Parameter object must be unique per command - parameters cannot be reused across commands.
         /// All commands in the batch are expected to be Text commands.
@@ -609,9 +664,10 @@ namespace OBeautifulCode.Database.Recipes
         public static async Task<IReadOnlyList<int>> ExecuteNonQueryBatchAsync(
             this string connectionString,
             string batchCommandText,
-            int commandTimeoutInSeconds = 30)
+            int commandTimeoutInSeconds = 30,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var connection = await connectionString.OpenSqlConnectionAsync())
+            using (var connection = await connectionString.OpenSqlConnectionAsync(sqlInfoMessageEventHandler))
             {
                 var result = await connection.ExecuteNonQueryBatchAsync(batchCommandText, commandTimeoutInSeconds);
 
@@ -684,6 +740,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// true if executing the command results in at least one row of data; otherwise false.
         /// </returns>
@@ -695,9 +752,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = reader.Read();
 
@@ -757,6 +815,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// true if executing the command results in at least one row of data; otherwise false.
         /// </returns>
@@ -767,9 +826,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = await reader.ReadAsync();
 
@@ -828,6 +888,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The results of the query in the order their were returned from the database.
         /// </returns>
@@ -838,9 +899,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = reader.ReadSingleColumnInternal();
 
@@ -895,6 +957,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The results of the query in the order their were returned from the database.
         /// </returns>
@@ -905,9 +968,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = await reader.ReadSingleColumnInternalAsync();
 
@@ -963,6 +1027,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The resulting value.
         /// </returns>
@@ -973,9 +1038,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = reader.ReadSingleValueInternal();
 
@@ -1032,6 +1098,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// The resulting value.
         /// </returns>
@@ -1042,9 +1109,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = await reader.ReadSingleValueInternalAsync();
 
@@ -1100,6 +1168,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
@@ -1110,9 +1179,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = reader.ReadSingleRowInternal(throwIfNoRows: true);
 
@@ -1134,6 +1204,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
@@ -1144,9 +1215,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = reader.ReadSingleRowInternal(throwIfNoRows: false);
 
@@ -1234,6 +1306,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
@@ -1244,9 +1317,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: true);
 
@@ -1268,6 +1342,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
@@ -1278,9 +1353,10 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
-            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+            using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
                 var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: false);
 
@@ -1369,6 +1445,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         public static void WriteToCsv(
             this string connectionString,
             string commandText,
@@ -1378,7 +1455,8 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (outputFilePath == null)
             {
@@ -1392,7 +1470,7 @@ namespace OBeautifulCode.Database.Recipes
 
             using (var writer = new StreamWriter(outputFilePath))
             {
-                using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+                using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
                 {
                     reader.WriteToCsv(writer, includeColumnNames);
                 }
@@ -1414,6 +1492,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="commandType">OPTIONAL value that determines how the command text is to be interpreted.  DEFAULT is <see cref="CommandType.Text"/>; a SQL text command.</param>
         /// <param name="commandBehavior">OPTIONAL value providing a description of the results of the query and its effect on the database.  DEFAULT is <see cref="CommandBehavior.Default"/>; the query may return multiple result sets and execution of the query may affect the database state.  This enumeration has a FlagsAttribute attribute that allows a bitwise combination of its member values.</param>
         /// <param name="prepareCommand">OPTIONAL value indicating whether to prepared (or compile) the command on the data source.</param>
+        /// <param name="sqlInfoMessageEventHandler">OPTIONAL method that will handle the <see cref="SqlConnection.InfoMessage"/> event.</param>
         /// <returns>
         /// A task.
         /// </returns>
@@ -1426,7 +1505,8 @@ namespace OBeautifulCode.Database.Recipes
             IReadOnlyList<SqlParameter> commandParameters = null,
             CommandType commandType = CommandType.Text,
             CommandBehavior commandBehavior = CommandBehavior.CloseConnection,
-            bool prepareCommand = false)
+            bool prepareCommand = false,
+            SqlInfoMessageEventHandler sqlInfoMessageEventHandler = null)
         {
             if (outputFilePath == null)
             {
@@ -1440,7 +1520,7 @@ namespace OBeautifulCode.Database.Recipes
 
             using (var writer = new StreamWriter(outputFilePath))
             {
-                using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand))
+                using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
                 {
                     await reader.WriteToCsvAsync(writer, includeColumnNames);
                 }
