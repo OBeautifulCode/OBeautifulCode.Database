@@ -33,7 +33,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <param name="serverName">Name, DNS, or IP of the server.</param>
         /// <param name="port">Optional port number to use.  DEFAULT is to omit the port number; this results in the driver choosing the default port.</param>
         /// <param name="instanceName">Optional instance name to use.  This would be @@servicename in T-SQL (e.g. MSSQLSERVER, SQLExpress).  DEFAULT is to use <paramref name="serverName"/> as-is and not append an instance name to that value; this results in connecting to the server's default instance.</param>
-        /// <param name="database">Optional database name; DEFAULT is 'master'.</param>
+        /// <param name="databaseName">Optional database name; DEFAULT is 'master'.</param>
         /// <param name="userName">Optional username to authenticate with; DEFAULT is null and will use trusted authentication.</param>
         /// <param name="clearTextPassword">Optional clear-text password to authenticate with; DEFAULT is null and will use trusted authentication.</param>
         /// <param name="connectionTimeoutInSeconds">Optional  length of time (in seconds) to wait for a connection to the server before terminating the attempt and generating an error.  DEFAULT is omit any specification of a timeout; this results in the use of the driver's default timeout.</param>
@@ -44,7 +44,7 @@ namespace OBeautifulCode.Database.Recipes
             string serverName,
             int? port = null,
             string instanceName = null,
-            string database = null,
+            string databaseName = null,
             string userName = null,
             string clearTextPassword = null,
             int? connectionTimeoutInSeconds = null)
@@ -70,12 +70,12 @@ namespace OBeautifulCode.Database.Recipes
                 }
                 catch (OverflowException)
                 {
-                    throw new ArgumentException(invalidPortExceptionMessage);
+                    throw new ArgumentOutOfRangeException(invalidPortExceptionMessage);
                 }
 
                 if (port == 0)
                 {
-                    throw new ArgumentException(invalidPortExceptionMessage);
+                    throw new ArgumentOutOfRangeException(invalidPortExceptionMessage);
                 }
             }
 
@@ -86,7 +86,7 @@ namespace OBeautifulCode.Database.Recipes
             var builder = new SqlConnectionStringBuilder
             {
                 DataSource = serverName + portAddIn + instanceNameAddIn,
-                InitialCatalog = string.IsNullOrWhiteSpace(database) ? "master" : database,
+                InitialCatalog = string.IsNullOrWhiteSpace(databaseName) ? "master" : databaseName,
                 IntegratedSecurity = string.IsNullOrWhiteSpace(userName),
             };
 
@@ -176,14 +176,19 @@ namespace OBeautifulCode.Database.Recipes
 
             const string asterisks = "*****";
 
-            var builder = new SqlConnectionStringBuilder(connectionString)
-            {
-                Password = asterisks,
-            };
+            var builder = new SqlConnectionStringBuilder(connectionString);
 
-            if (obfuscateUserName)
+            if (!string.IsNullOrWhiteSpace(builder.Password))
             {
-                builder.UserID = asterisks;
+                builder.Password = asterisks;
+            }
+
+            if (!string.IsNullOrWhiteSpace(builder.UserID))
+            {
+                if (obfuscateUserName)
+                {
+                    builder.UserID = asterisks;
+                }
             }
 
             var result = builder.ConnectionString;
