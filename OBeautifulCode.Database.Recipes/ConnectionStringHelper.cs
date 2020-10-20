@@ -11,6 +11,7 @@ namespace OBeautifulCode.Database.Recipes
 {
     using global::System;
     using global::System.Data.SqlClient;
+    using global::System.Globalization;
 
     using static global::System.FormattableString;
 
@@ -65,7 +66,7 @@ namespace OBeautifulCode.Database.Recipes
                 try
                 {
                     // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-                    Convert.ToUInt16(port);
+                    Convert.ToUInt16(port, CultureInfo.InvariantCulture);
                 }
                 catch (OverflowException)
                 {
@@ -155,13 +156,13 @@ namespace OBeautifulCode.Database.Recipes
         /// Obfuscates the credentials within a connection string, replacing them with '*****' (5 asterisks).
         /// </summary>
         /// <param name="connectionString">The original connection string.</param>
-        /// <param name="obfuscateUsername">Optional value indicating whether to obfuscate the username.  DEFAULT is to obfuscate the username.</param>
+        /// <param name="obfuscateUserName">Optional value indicating whether to obfuscate the username.  DEFAULT is to obfuscate the username.</param>
         /// <returns>
         /// The specified connection string, with the credentials obfuscated.
         /// </returns>
         public static string ObfuscateCredentialsInConnectionString(
             this string connectionString,
-            bool obfuscateUsername = true)
+            bool obfuscateUserName = true)
         {
             if (connectionString == null)
             {
@@ -180,7 +181,7 @@ namespace OBeautifulCode.Database.Recipes
                 Password = asterisks,
             };
 
-            if (obfuscateUsername)
+            if (obfuscateUserName)
             {
                 builder.UserID = asterisks;
             }
