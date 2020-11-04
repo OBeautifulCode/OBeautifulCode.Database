@@ -1382,7 +1382,7 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadSingleRow_ConnectionObjectProvided_MonolithicTest()
+        public void ReadSingleRowWithNamedColumns_ConnectionObjectProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
@@ -1391,7 +1391,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             Exception actualException;
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, "Select * "));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1403,7 +1403,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1412,7 +1412,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1421,7 +1421,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in no rows.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1430,7 +1430,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1440,7 +1440,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1450,7 +1450,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1460,7 +1460,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1469,7 +1469,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryNonParameterized);
                 Assert.Single(values);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1482,7 +1482,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(2, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1498,7 +1498,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                var values = DatabaseHelper.ReadSingleRow(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(3, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1513,59 +1513,59 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadSingleRow_ConnectionStringProvided_MonolithicTest()
+        public void ReadSingleRowWithNamedColumns_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, "Select * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, "Select * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // one column returned with no rows
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns returned, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in no rows.", actualException.Message);
 
             // two columns with same name returned
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, two rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, three rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            var values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryNonParameterized);
+            var values = DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Single(values);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1574,7 +1574,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row two columns
             sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(2, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1586,7 +1586,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row three columns, one has null value
             sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRow(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(3, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1599,7 +1599,7 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadSingleRowOrDefault_ConnectionObjectProvided_MonolithicTest()
+        public void ReadSingleRowWithNamedColumnsOrDefault_ConnectionObjectProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
@@ -1608,7 +1608,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             Exception actualException;
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, "Select * "));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -1620,7 +1620,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1629,7 +1629,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryNonParameterized);
                 Assert.Null(values);
                 sqlConnection.Close();
             }
@@ -1638,7 +1638,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryNonParameterized);
                 Assert.Null(values);
                 sqlConnection.Close();
             }
@@ -1647,7 +1647,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1657,7 +1657,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1667,7 +1667,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1677,7 +1677,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true));
                 Assert.Equal("Query results in more than one row.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -1686,7 +1686,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryNonParameterized);
                 Assert.Single(values);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1699,7 +1699,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(2, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1715,7 +1715,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-                var values = DatabaseHelper.ReadSingleRowOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
                 Assert.Equal(3, values.Count);
                 Assert.True(values.ContainsKey("open"));
                 Assert.IsType<decimal>(values["open"]);
@@ -1730,59 +1730,59 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadSingleRowOrDefault_ConnectionStringProvided_MonolithicTest()
+        public void ReadSingleRowWithNamedColumnsOrDefault_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, "Select * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, "Select * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // one column returned with no rows
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            var values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            var values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Null(values);
 
             // two columns returned, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Null(values);
 
             // two columns with same name returned
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, two rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // two columns, three rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true));
             Assert.Equal("Query results in more than one row.", actualException.Message);
 
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryNonParameterized);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryNonParameterized);
             Assert.Single(values);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1791,7 +1791,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row two columns
             sqlQueryParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(2, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -1803,7 +1803,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row three columns, one has null value
             sqlQueryParameterized = "Select [Open] , [High], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadSingleRowOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadSingleRowWithNamedColumnsOrDefault(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
             Assert.Equal(3, values.Count);
             Assert.True(values.ContainsKey("open"));
             Assert.IsType<decimal>(values["open"]);
@@ -2114,7 +2114,7 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadAllRows_ConnectionObjectProvided_MonolithicTest()
+        public void ReadAllRowsWithNamedColumns_ConnectionObjectProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from ExecuteReader
@@ -2123,7 +2123,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             Exception actualException;
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRows(sqlConnection, "Select * "));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, "Select * "));
                 Assert.Equal("Must specify table to select from.", actualException.Message);
                 Assert.Equal(ConnectionState.Open, sqlConnection.State);
                 sqlConnection.Close();
@@ -2135,7 +2135,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+                actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
                 Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -2144,7 +2144,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryNonParameterized);
                 Assert.Empty(values);
                 sqlConnection.Close();
             }
@@ -2153,7 +2153,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryNonParameterized);
                 Assert.Empty(values);
                 sqlConnection.Close();
             }
@@ -2162,7 +2162,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryNonParameterized));
+                actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryNonParameterized));
                 Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
                 sqlConnection.Close();
             }
@@ -2173,7 +2173,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
 
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
 
                 values.AsTest().Must().HaveCount(2);
 
@@ -2192,7 +2192,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
 
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
 
                 values.AsTest().Must().HaveCount(2);
 
@@ -2213,7 +2213,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
 
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
 
                 values.AsTest().Must().HaveCount(3);
 
@@ -2236,7 +2236,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
             using (var sqlConnection = DatabaseHelper.OpenSqlConnection(this.ConnectionString))
             {
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryNonParameterized);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryNonParameterized);
 
                 values.AsTest().Must().HaveCount(1);
 
@@ -2252,7 +2252,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
 
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
 
                 values.AsTest().Must().HaveCount(1);
 
@@ -2269,7 +2269,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             {
                 var symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
 
-                var values = DatabaseHelper.ReadAllRows(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
+                var values = DatabaseHelper.ReadAllRowsWithNamedColumns(sqlConnection, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, null, CommandBehavior.Default, true);
 
                 values.AsTest().Must().HaveCount(1);
 
@@ -2283,42 +2283,42 @@ namespace OBeautifulCode.Database.Recipes.Test
         }
 
         [Fact]
-        public void ReadAllRows_ConnectionStringProvided_MonolithicTest()
+        public void ReadAllRowsWithNamedColumns_ConnectionStringProvided_MonolithicTest()
         {
             // not testing: all exceptions generated from BuildSqlCommand via ExecuteReader
             // not testing: all exceptions from OpenConnection via ExecuteReader
             // not testing: all exceptions generated from ExecuteReader with connection
 
             // exception executing command
-            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRows(this.ConnectionString, "Select * "));
+            Exception actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, "Select * "));
             Assert.Equal("Must specify table to select from.", actualException.Message);
 
             // parameter datatypes are wrong
             string sqlQueryParameterized = "Select [Open] From [StockQuotes] Where [Date] = @date And [Symbol] = @symbol";
             var dateParamter = new SqlParameter("@date", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
             var symbolParameter = new SqlParameter("@symbol", SqlDbType.SmallDateTime) { Value = new DateTime(2009, 1, 5) };
-            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
+            actualException = Assert.Throws<SqlException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { dateParamter, symbolParameter }));
             Assert.Equal("Conversion failed when converting character string to smalldatetime data type.", actualException.Message);
 
             // one column returned with no rows
             string sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            var values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryNonParameterized);
+            var values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized);
             values.AsTest().Must().BeEmptyEnumerable();
 
             // two columns returned, with no rows
             sqlQueryNonParameterized = "Select [Open] , [High] From [StockQuotes] Where [Date] = '12/2/2011' And [Symbol] = 'msft'";
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryNonParameterized);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized);
             values.AsTest().Must().BeEmptyEnumerable();
 
             // two columns with same name returned
             sqlQueryNonParameterized = "Select [Open] , [Close] , [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryNonParameterized));
+            actualException = Assert.Throws<InvalidOperationException>(() => DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized));
             Assert.Equal("Query results in two columns with the same name: Open.", actualException.Message);
 
             // one column, two rows
             sqlQueryParameterized = "Select [Open] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
 
             values.AsTest().Must().HaveCount(2);
 
@@ -2331,7 +2331,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // two columns, two rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] = '1/5/2009' Or [Date] = '1/6/2009' ) And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
 
             values.AsTest().Must().HaveCount(2);
 
@@ -2346,7 +2346,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // two columns, three rows
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where ( [Date] >= '1/5/2009' And [Date] <= '1/7/2009' )  And [Symbol] = @symbol Order By [Date]";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
 
             values.AsTest().Must().HaveCount(3);
 
@@ -2364,7 +2364,7 @@ namespace OBeautifulCode.Database.Recipes.Test
 
             // one row one column
             sqlQueryNonParameterized = "Select [Open] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = 'msft'";
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryNonParameterized);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryNonParameterized);
 
             values.AsTest().Must().HaveCount(1);
 
@@ -2374,7 +2374,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row two columns
             sqlQueryParameterized = "Select [Open] , [Close] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
 
             values.AsTest().Must().HaveCount(1);
 
@@ -2385,7 +2385,7 @@ namespace OBeautifulCode.Database.Recipes.Test
             // one row three columns, one has null value
             sqlQueryParameterized = "Select [Open] , [Close], [OpenInterest] From [StockQuotes] Where [Date] = '1/5/2009' And [Symbol] = @symbol";
             symbolParameter = new SqlParameter("@symbol", SqlDbType.NVarChar, 10) { Value = "msft" };
-            values = DatabaseHelper.ReadAllRows(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
+            values = DatabaseHelper.ReadAllRowsWithNamedColumns(this.ConnectionString, sqlQueryParameterized, 30, new[] { symbolParameter }, CommandType.Text, CommandBehavior.CloseConnection, true);
 
             values.AsTest().Must().HaveCount(1);
 

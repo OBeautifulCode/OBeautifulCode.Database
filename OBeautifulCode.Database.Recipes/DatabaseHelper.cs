@@ -893,7 +893,7 @@ namespace OBeautifulCode.Database.Recipes
         /// A list with the row values, in the order the rows were returned.
         /// Each row is represented as a dictionary where the keys are column names (case insensitive) and values are the values of the row returned by the query.
         /// </returns>
-        public static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRows(
+        public static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRowsWithNamedColumns(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -905,7 +905,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = reader.ReadAllRowsInternal();
+                var result = reader.ReadAllRowsWithNamedColumnsInternal();
 
                 return result;
             }
@@ -927,7 +927,7 @@ namespace OBeautifulCode.Database.Recipes
         /// A list with the row values, in the order the rows were returned.
         /// Each row is represented as a dictionary where the keys are column names (case insensitive) and values are the values of the row returned by the query.
         /// </returns>
-        public static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRows(
+        public static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRowsWithNamedColumns(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -939,7 +939,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = reader.ReadAllRowsInternal();
+                var result = reader.ReadAllRowsWithNamedColumnsInternal();
 
                 return result;
             }
@@ -964,7 +964,7 @@ namespace OBeautifulCode.Database.Recipes
         /// A list with the row values, in the order the rows were returned.
         /// Each row is represented as a dictionary where the keys are column names (case insensitive) and values are the values of the row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsAsync(
+        public static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsWithNamedColumnsAsync(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -976,7 +976,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = await reader.ReadAllRowsInternalAsync();
+                var result = await reader.ReadAllRowsWithNamedColumnsInternalAsync();
 
                 return result;
             }
@@ -998,7 +998,7 @@ namespace OBeautifulCode.Database.Recipes
         /// A list with the row values, in the order the rows were returned.
         /// Each row is represented as a dictionary where the keys are column names (case insensitive) and values are the values of the row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsAsync(
+        public static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsWithNamedColumnsAsync(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1010,7 +1010,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = await reader.ReadAllRowsInternalAsync();
+                var result = await reader.ReadAllRowsWithNamedColumnsInternalAsync();
 
                 return result;
             }
@@ -1314,7 +1314,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static IReadOnlyDictionary<string, object> ReadSingleRow(
+        public static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumns(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1326,7 +1326,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = reader.ReadSingleRowInternal(throwIfNoRows: true);
+                var result = reader.ReadSingleRowWithNamedColumnsInternal(throwIfNoRows: true);
 
                 return result;
             }
@@ -1350,7 +1350,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static IReadOnlyDictionary<string, object> ReadSingleRowOrDefault(
+        public static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumnsOrDefault(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1362,7 +1362,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connectionString.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = reader.ReadSingleRowInternal(throwIfNoRows: false);
+                var result = reader.ReadSingleRowWithNamedColumnsInternal(throwIfNoRows: false);
 
                 return result;
             }
@@ -1383,7 +1383,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static IReadOnlyDictionary<string, object> ReadSingleRow(
+        public static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumns(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1395,7 +1395,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = reader.ReadSingleRowInternal(throwIfNoRows: true);
+                var result = reader.ReadSingleRowWithNamedColumnsInternal(throwIfNoRows: true);
 
                 return result;
             }
@@ -1416,7 +1416,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static IReadOnlyDictionary<string, object> ReadSingleRowOrDefault(
+        public static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumnsOrDefault(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1428,7 +1428,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = connection.ExecuteReader(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = reader.ReadSingleRowInternal(throwIfNoRows: false);
+                var result = reader.ReadSingleRowWithNamedColumnsInternal(throwIfNoRows: false);
 
                 return result;
             }
@@ -1452,7 +1452,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowAsync(
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowWithNamedColumnsAsync(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1464,7 +1464,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: true);
+                var result = await reader.ReadSingleRowWithNamedColumnsInternalAsync(throwIfNoRows: true);
 
                 return result;
             }
@@ -1488,7 +1488,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowOrDefaultAsync(
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowWithNamedColumnsOrDefaultAsync(
             this string connectionString,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1500,7 +1500,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connectionString.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, commandBehavior, prepareCommand, sqlInfoMessageEventHandler))
             {
-                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: false);
+                var result = await reader.ReadSingleRowWithNamedColumnsInternalAsync(throwIfNoRows: false);
 
                 return result;
             }
@@ -1521,7 +1521,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// A dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowAsync(
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowWithNamedColumnsAsync(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1533,7 +1533,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: true);
+                var result = await reader.ReadSingleRowWithNamedColumnsInternalAsync(throwIfNoRows: true);
 
                 return result;
             }
@@ -1554,7 +1554,7 @@ namespace OBeautifulCode.Database.Recipes
         /// <returns>
         /// null if there are no rows, otherwise a dictionary where the keys are column names (case insensitive) and values are the values of the single row returned by the query.
         /// </returns>
-        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowOrDefaultAsync(
+        public static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowWithNamedColumnsOrDefaultAsync(
             this SqlConnection connection,
             string commandText,
             int commandTimeoutInSeconds = 30,
@@ -1566,7 +1566,7 @@ namespace OBeautifulCode.Database.Recipes
         {
             using (var reader = await connection.ExecuteReaderAsync(commandText, commandTimeoutInSeconds, commandParameters, commandType, transaction, commandBehavior, prepareCommand))
             {
-                var result = await reader.ReadSingleRowInternalAsync(throwIfNoRows: false);
+                var result = await reader.ReadSingleRowWithNamedColumnsInternalAsync(throwIfNoRows: false);
 
                 return result;
             }
@@ -1899,7 +1899,7 @@ namespace OBeautifulCode.Database.Recipes
             }
         }
 
-        private static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRowsInternal(
+        private static IReadOnlyList<IReadOnlyDictionary<string, object>> ReadAllRowsWithNamedColumnsInternal(
             this SqlDataReader reader)
         {
             var result = new List<IReadOnlyDictionary<string, object>>();
@@ -1908,7 +1908,7 @@ namespace OBeautifulCode.Database.Recipes
             {
                 while (reader.Read())
                 {
-                    var row = reader.ReadRowInternal();
+                    var row = reader.ReadRowWithNamedColumnsInternal();
 
                     result.Add(row);
                 }
@@ -1921,7 +1921,7 @@ namespace OBeautifulCode.Database.Recipes
             return result;
         }
 
-        private static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsInternalAsync(
+        private static async Task<IReadOnlyList<IReadOnlyDictionary<string, object>>> ReadAllRowsWithNamedColumnsInternalAsync(
             this SqlDataReader reader)
         {
             var result = new List<IReadOnlyDictionary<string, object>>();
@@ -1930,7 +1930,7 @@ namespace OBeautifulCode.Database.Recipes
             {
                 while (await reader.ReadAsync())
                 {
-                    var row = reader.ReadRowInternal();
+                    var row = reader.ReadRowWithNamedColumnsInternal();
 
                     result.Add(row);
                 }
@@ -1943,7 +1943,7 @@ namespace OBeautifulCode.Database.Recipes
             return result;
         }
 
-        private static IReadOnlyDictionary<string, object> ReadSingleRowInternal(
+        private static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumnsInternal(
             this SqlDataReader reader,
             bool throwIfNoRows)
         {
@@ -1959,7 +1959,7 @@ namespace OBeautifulCode.Database.Recipes
                     return null;
                 }
 
-                var result = reader.ReadRowInternal();
+                var result = reader.ReadRowWithNamedColumnsInternal();
 
                 if (reader.Read())
                 {
@@ -1974,7 +1974,7 @@ namespace OBeautifulCode.Database.Recipes
             }
         }
 
-        private static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowInternalAsync(
+        private static async Task<IReadOnlyDictionary<string, object>> ReadSingleRowWithNamedColumnsInternalAsync(
             this SqlDataReader reader,
             bool throwIfNoRows)
         {
@@ -1990,7 +1990,7 @@ namespace OBeautifulCode.Database.Recipes
                     return null;
                 }
 
-                var result = reader.ReadRowInternal();
+                var result = reader.ReadRowWithNamedColumnsInternal();
 
                 if (await reader.ReadAsync())
                 {
@@ -2005,7 +2005,7 @@ namespace OBeautifulCode.Database.Recipes
             }
         }
 
-        private static IReadOnlyDictionary<string, object> ReadRowInternal(
+        private static IReadOnlyDictionary<string, object> ReadRowWithNamedColumnsInternal(
             this SqlDataReader reader)
         {
             var result = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
