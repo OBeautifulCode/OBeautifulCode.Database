@@ -1943,6 +1943,50 @@ namespace OBeautifulCode.Database.Recipes
             return result;
         }
 
+        private static IReadOnlyList<IReadOnlyDictionary<int, object>> ReadAllRowsWithOrdinalColumnsInternal(
+            this SqlDataReader reader)
+        {
+            var result = new List<IReadOnlyDictionary<int, object>>();
+
+            try
+            {
+                while (reader.Read())
+                {
+                    var row = reader.ReadRowWithOrdinalColumnsInternal();
+
+                    result.Add(row);
+                }
+            }
+            finally
+            {
+                reader.Close();
+            }
+
+            return result;
+        }
+
+        private static async Task<IReadOnlyList<IReadOnlyDictionary<int, object>>> ReadAllRowsWithOrdinalColumnsInternalAsync(
+            this SqlDataReader reader)
+        {
+            var result = new List<IReadOnlyDictionary<int, object>>();
+
+            try
+            {
+                while (await reader.ReadAsync())
+                {
+                    var row = reader.ReadRowWithOrdinalColumnsInternal();
+
+                    result.Add(row);
+                }
+            }
+            finally
+            {
+                reader.Close();
+            }
+
+            return result;
+        }
+
         private static IReadOnlyDictionary<string, object> ReadSingleRowWithNamedColumnsInternal(
             this SqlDataReader reader,
             bool throwIfNoRows)
@@ -2005,6 +2049,68 @@ namespace OBeautifulCode.Database.Recipes
             }
         }
 
+        private static IReadOnlyDictionary<int, object> ReadSingleRowWithOrdinalColumnsInternal(
+            this SqlDataReader reader,
+            bool throwIfNoRows)
+        {
+            try
+            {
+                if (!reader.Read())
+                {
+                    if (throwIfNoRows)
+                    {
+                        throw new InvalidOperationException("Query results in no rows.");
+                    }
+
+                    return null;
+                }
+
+                var result = reader.ReadRowWithOrdinalColumnsInternal();
+
+                if (reader.Read())
+                {
+                    throw new InvalidOperationException("Query results in more than one row.");
+                }
+
+                return result;
+            }
+            finally
+            {
+                reader.Close();
+            }
+        }
+
+        private static async Task<IReadOnlyDictionary<int, object>> ReadSingleRowWithOrdinalColumnsInternalAsync(
+            this SqlDataReader reader,
+            bool throwIfNoRows)
+        {
+            try
+            {
+                if (!(await reader.ReadAsync()))
+                {
+                    if (throwIfNoRows)
+                    {
+                        throw new InvalidOperationException("Query results in no rows.");
+                    }
+
+                    return null;
+                }
+
+                var result = reader.ReadRowWithOrdinalColumnsInternal();
+
+                if (await reader.ReadAsync())
+                {
+                    throw new InvalidOperationException("Query results in more than one row.");
+                }
+
+                return result;
+            }
+            finally
+            {
+                reader.Close();
+            }
+        }
+
         private static IReadOnlyDictionary<string, object> ReadRowWithNamedColumnsInternal(
             this SqlDataReader reader)
         {
@@ -2020,6 +2126,19 @@ namespace OBeautifulCode.Database.Recipes
                 }
 
                 result.Add(fieldName, reader.IsDBNull(x) ? null : reader[x]);
+            }
+
+            return result;
+        }
+
+        private static IReadOnlyDictionary<int, object> ReadRowWithOrdinalColumnsInternal(
+            this SqlDataReader reader)
+        {
+            var result = new Dictionary<int, object>();
+
+            for (var x = 0; x < reader.FieldCount; x++)
+            {
+                result.Add(x, reader.IsDBNull(x) ? null : reader[x]);
             }
 
             return result;
