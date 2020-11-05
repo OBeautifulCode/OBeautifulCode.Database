@@ -29,6 +29,7 @@ namespace OBeautifulCode.Database.Recipes
     [System.CodeDom.Compiler.GeneratedCode("OBeautifulCode.Database.Recipes", "See package version number")]
     internal
 #else
+    [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = ObcSuppressBecause.CA1506_AvoidExcessiveClassCoupling_DisagreeWithAssessment)]
     public
 #endif
     static partial class DatabaseHelper

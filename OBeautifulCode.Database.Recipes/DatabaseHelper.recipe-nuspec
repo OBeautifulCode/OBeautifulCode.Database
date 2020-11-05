@@ -14,17 +14,17 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="DatabaseHelper\DatabaseHelper.cs"                 target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.cs" />
     <file src="DatabaseHelper\DatabaseHelper.ExecuteNonQuery.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ExecuteNonQuery.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.ExecuteReader.cs"   target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ExecuteReader.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.HasRow.cs"          target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.HasRow.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.ReadColumn.cs"      target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadColumn.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.ReadRowsNamed.cs"   target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadRowsNamed.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.ExecuteReader.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ExecuteReader.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.HasRow.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.HasRow.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.ReadColumn.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadColumn.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.ReadRowsNamed.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadRowsNamed.cs" />
     <file src="DatabaseHelper\DatabaseHelper.ReadRowsOrdinal.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadRowsOrdinal.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.ReadValue.cs"       target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadValue.cs" />
-    <file src="DatabaseHelper\DatabaseHelper.WriteToCsv.cs"      target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.WriteToCsv.cs" />
-    <file src="SqlParameterExtensions.cs"                        target="content\net462\.recipes\OBeautifulCode.Database\SqlParameterExtensions.cs" />
-    <file src="SqlBatchStatementSplitter.cs"                     target="content\net462\.recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
-    <file src="ConnectionStringHelper.cs"                        target="content\net462\.recipes\OBeautifulCode.Database\ConnectionStringHelper.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.ReadValue.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.ReadValue.cs" />
+    <file src="DatabaseHelper\DatabaseHelper.WriteToCsv.cs" target="content\net462\.recipes\OBeautifulCode.Database\DatabaseHelper.WriteToCsv.cs" />
+    <file src="SqlParameterExtensions.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlParameterExtensions.cs" />
+    <file src="SqlBatchStatementSplitter.cs" target="content\net462\.recipes\OBeautifulCode.Database\SqlBatchStatementSplitter.cs" />
+    <file src="ConnectionStringHelper.cs" target="content\net462\.recipes\OBeautifulCode.Database\ConnectionStringHelper.cs" />
   </files>
 </package>
