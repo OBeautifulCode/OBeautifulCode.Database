@@ -16,7 +16,7 @@ namespace OBeautifulCode.Assertion.Recipes
     using global::System.Globalization;
     using global::System.Linq;
     using global::System.Text.RegularExpressions;
-
+    using OBeautifulCode.String.Recipes;
     using OBeautifulCode.Type.Recipes;
 
     [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "A generalized assertion library is going to require lots of types.")]
@@ -122,6 +122,94 @@ namespace OBeautifulCode.Assertion.Recipes
             if (!shouldNotThrow)
             {
                 var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeFalseExceptionMessageSuffix);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        private static void BeTrueWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            var shouldThrow = (bool)verifiableItem.ItemValue != true;
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeTrueWhenNotNullExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeTrueWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            var shouldNotThrow = (bool)verifiableItem.ItemValue == false;
+
+            if (!shouldNotThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeTrueWhenNotNullExceptionMessageSuffix);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        private static void BeFalseWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            var shouldThrow = (bool)verifiableItem.ItemValue;
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeFalseWhenNotNullExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeFalseWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            var shouldNotThrow = (bool)verifiableItem.ItemValue;
+
+            if (!shouldNotThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeFalseWhenNotNullExceptionMessageSuffix);
 
                 var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
 
@@ -269,20 +357,21 @@ namespace OBeautifulCode.Assertion.Recipes
         {
             NotBeNullInternal(assertionTracker, verification, verifiableItem);
 
-            var valueAsEnumerable = verifiableItem.ItemValue as IEnumerable;
+            NotBeEmptyEnumerableInternalInternal(assertionTracker, verification, verifiableItem, NotBeEmptyEnumerableExceptionMessageSuffix);
+        }
 
-            var elementCount = GetElementCount(valueAsEnumerable);
-
-            var shouldThrow = elementCount == 0;
-
-            if (shouldThrow)
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unused", Justification = "Cannot iterate without a local")]
+        private static void NotBeEmptyEnumerableWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
             {
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeEmptyEnumerableExceptionMessageSuffix);
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
-
-                throw exception;
+                return;
             }
+
+            NotBeEmptyEnumerableInternalInternal(assertionTracker, verification, verifiableItem, NotBeEmptyEnumerableWhenNotNullExceptionMessageSuffix);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unused", Justification = "Cannot iterate without a local")]
@@ -318,19 +407,21 @@ namespace OBeautifulCode.Assertion.Recipes
         {
             NotBeNullInternal(assertionTracker, verification, verifiableItem);
 
-            var valueAsDictionary = verifiableItem.ItemValue as IDictionary;
+            NotBeEmptyDictionaryInternalInternal(assertionTracker, verification, verifiableItem, NotBeEmptyDictionaryExceptionMessageSuffix);
+        }
 
-            // ReSharper disable once PossibleNullReferenceException
-            var shouldThrow = valueAsDictionary.Count == 0;
-
-            if (shouldThrow)
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unused", Justification = "Cannot iterate without a local")]
+        private static void NotBeEmptyDictionaryWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
             {
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeEmptyDictionaryExceptionMessageSuffix);
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
-
-                throw exception;
+                return;
             }
+
+            NotBeEmptyDictionaryInternalInternal(assertionTracker, verification, verifiableItem, NotBeEmptyDictionaryWhenNotNullExceptionMessageSuffix);
         }
 
         private static void ContainSomeNullElementsInternal(
@@ -425,35 +516,20 @@ namespace OBeautifulCode.Assertion.Recipes
         {
             NotBeNullInternal(assertionTracker, verification, verifiableItem);
 
-            var valueAsEnumerable = verifiableItem.ItemValue as IEnumerable;
+            NotContainAnyKeyValuePairsWithNullValueInternalInternal(assertionTracker, verification, verifiableItem, NotContainAnyKeyValuePairsWithNullValueExceptionMessageSuffix);
+        }
 
-            var shouldThrow = false;
-
-            object offendingKey = null;
-
-            // ReSharper disable once PossibleNullReferenceException
-            foreach (var keyValuePair in valueAsEnumerable)
+        private static void NotContainAnyKeyValuePairsWithNullValueWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
             {
-                if (ReferenceEquals(((dynamic)keyValuePair).Value, null))
-                {
-                    shouldThrow = true;
-
-                    offendingKey = ((dynamic)keyValuePair).Key;
-
-                    break;
-                }
+                return;
             }
 
-            if (shouldThrow)
-            {
-                var contextualInfo = string.Format(CultureInfo.InvariantCulture, DictionaryKeyExampleContextualInfo, offendingKey.ToStringInErrorMessage());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotContainAnyKeyValuePairsWithNullValueExceptionMessageSuffix, contextualInfo: contextualInfo);
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
-
-                throw exception;
-            }
+            NotContainAnyKeyValuePairsWithNullValueInternalInternal(assertionTracker, verification, verifiableItem, NotContainAnyKeyValuePairsWithNullValueWhenNotNullExceptionMessageSuffix);
         }
 
         private static void ContainKeyInternal(
@@ -553,22 +629,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1LessThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeLessThanExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            BeLessThanInternalInternal(assertionTracker, verification, verifiableItem, BeLessThanExceptionMessageSuffix);
         }
 
         private static void NotBeLessThanInternal(
@@ -576,22 +637,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1LessThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeLessThanExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            NotBeLessThanInternalInternal(assertionTracker, verification, verifiableItem, NotBeLessThanExceptionMessageSuffix);
         }
 
         private static void BeGreaterThanInternal(
@@ -599,22 +645,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1GreaterThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeGreaterThanExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            BeGreaterThanInternalInternal(assertionTracker, verification, verifiableItem, BeGreaterThanExceptionMessageSuffix);
         }
 
         private static void NotBeGreaterThanInternal(
@@ -622,22 +653,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1GreaterThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeGreaterThanExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            NotBeGreaterThanInternalInternal(assertionTracker, verification, verifiableItem, NotBeGreaterThanExceptionMessageSuffix);
         }
 
         private static void BeLessThanOrEqualToInternal(
@@ -645,22 +661,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1GreaterThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeLessThanOrEqualToExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            BeLessThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeLessThanOrEqualToExceptionMessageSuffix);
         }
 
         private static void NotBeLessThanOrEqualToInternal(
@@ -668,22 +669,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1GreaterThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeLessThanOrEqualToExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            NotBeLessThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeLessThanOrEqualToExceptionMessageSuffix);
         }
 
         private static void BeGreaterThanOrEqualToInternal(
@@ -691,22 +677,7 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1LessThanValue2;
-
-            if (shouldThrow)
-            {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeGreaterThanOrEqualToExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
-            }
+            BeGreaterThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeGreaterThanOrEqualToExceptionMessageSuffix);
         }
 
         private static void NotBeGreaterThanOrEqualToInternal(
@@ -714,22 +685,111 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1LessThanValue2;
+            NotBeGreaterThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeGreaterThanOrEqualToExceptionMessageSuffix);
+        }
 
-            if (shouldThrow)
+        private static void BeLessThanWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
             {
-                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
-
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeGreaterThanOrEqualToExceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
-
-                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
-                    ? ArgumentExceptionKind.ArgumentException
-                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
-
-                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
-
-                throw exception;
+                return;
             }
+
+            BeLessThanInternalInternal(assertionTracker, verification, verifiableItem, BeLessThanWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeLessThanWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeLessThanInternalInternal(assertionTracker, verification, verifiableItem, NotBeLessThanWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void BeGreaterThanWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            BeGreaterThanInternalInternal(assertionTracker, verification, verifiableItem, BeGreaterThanWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeGreaterThanWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeGreaterThanInternalInternal(assertionTracker, verification, verifiableItem, NotBeGreaterThanWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void BeLessThanOrEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            BeLessThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeLessThanOrEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeLessThanOrEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeLessThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeLessThanOrEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void BeGreaterThanOrEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            BeGreaterThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeGreaterThanOrEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeGreaterThanOrEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeGreaterThanOrEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeGreaterThanOrEqualToWhenNotNullExceptionMessageSuffix);
         }
 
         private static void BeEqualToInternal(
@@ -774,23 +834,23 @@ namespace OBeautifulCode.Assertion.Recipes
             NotBeEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeEqualToWhenNotNullExceptionMessageSuffix);
         }
 
-        private static void BeEqualToAnyOfInternal(
+        private static void BeSequenceEqualToInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            BeEqualToAnyOfInternalInternal(assertionTracker, verification, verifiableItem, BeEqualToAnyOfExceptionMessageSuffix);
+            BeSequenceEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeSequenceEqualToExceptionMessageSuffix);
         }
 
-        private static void NotBeEqualToAnyOfInternal(
+        private static void NotBeSequenceEqualToInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            NotBeEqualToAnyOfInternalInternal(assertionTracker, verification, verifiableItem, NotBeEqualToAnyOfExceptionMessageSuffix);
+            NotBeSequenceEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeSequenceEqualToExceptionMessageSuffix);
         }
 
-        private static void BeEqualToAnyOfWhenNotNullInternal(
+        private static void BeSequenceEqualToWhenNotNullInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem)
@@ -800,10 +860,10 @@ namespace OBeautifulCode.Assertion.Recipes
                 return;
             }
 
-            BeEqualToAnyOfInternalInternal(assertionTracker, verification, verifiableItem, BeEqualToAnyOfWhenNotNullExceptionMessageSuffix);
+            BeSequenceEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeSequenceEqualToWhenNotNullExceptionMessageSuffix);
         }
 
-        private static void NotBeEqualToAnyOfWhenNotNullInternal(
+        private static void NotBeSequenceEqualToWhenNotNullInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem)
@@ -813,7 +873,91 @@ namespace OBeautifulCode.Assertion.Recipes
                 return;
             }
 
-            NotBeEqualToAnyOfInternalInternal(assertionTracker, verification, verifiableItem, NotBeEqualToAnyOfWhenNotNullExceptionMessageSuffix);
+            NotBeSequenceEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeSequenceEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void BeUnorderedEqualToInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            BeUnorderedEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeUnorderedEqualToExceptionMessageSuffix);
+        }
+
+        private static void NotBeUnorderedEqualToInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            NotBeUnorderedEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeUnorderedEqualToExceptionMessageSuffix);
+        }
+
+        private static void BeUnorderedEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            BeUnorderedEqualToInternalInternal(assertionTracker, verification, verifiableItem, BeUnorderedEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeUnorderedEqualToWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeUnorderedEqualToInternalInternal(assertionTracker, verification, verifiableItem, NotBeUnorderedEqualToWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void BeElementInInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            BeElementInInternalInternal(assertionTracker, verification, verifiableItem, BeElementInExceptionMessageSuffix);
+        }
+
+        private static void NotBeElementInInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            NotBeElementInInternalInternal(assertionTracker, verification, verifiableItem, NotBeElementInExceptionMessageSuffix);
+        }
+
+        private static void BeElementInWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            BeElementInInternalInternal(assertionTracker, verification, verifiableItem, BeElementInWhenNotNullExceptionMessageSuffix);
+        }
+
+        private static void NotBeElementInWhenNotNullInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            if (ReferenceEquals(verifiableItem.ItemValue, null))
+            {
+                return;
+            }
+
+            NotBeElementInInternalInternal(assertionTracker, verification, verifiableItem, NotBeElementInWhenNotNullExceptionMessageSuffix);
         }
 
         private static void BeInRangeInternal(
@@ -856,7 +1000,7 @@ namespace OBeautifulCode.Assertion.Recipes
             {
                 var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
 
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeInRangeExceptionMessageSuffix, methodologyInfo: methodologyInfo);
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotBeInRangeExceptionMessageSuffix, Include.FailingValue, methodologyInfo);
 
                 var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
                     ? ArgumentExceptionKind.ArgumentException
@@ -942,7 +1086,22 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            BeInCharacterSetInternal(assertionTracker, verification, verifiableItem, AlphabeticCharactersHashSet, BeAlphabeticExceptionMessageSuffix);
+            NotBeNullInternal(assertionTracker, verification, verifiableItem);
+
+            var otherAllowedCharacters = (IReadOnlyCollection<char>)verification.VerificationParameters[0].Value;
+
+            var stringValue = (string)verifiableItem.ItemValue;
+
+            var shouldThrow = !stringValue.IsAlphabetic(otherAllowedCharacters);
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeAlphabeticExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
         }
 
         private static void BeAlphanumericInternal(
@@ -950,43 +1109,17 @@ namespace OBeautifulCode.Assertion.Recipes
             Verification verification,
             VerifiableItem verifiableItem)
         {
-            BeInCharacterSetInternal(assertionTracker, verification, verifiableItem, AlphaNumericCharactersHashSet, BeAlphanumericExceptionMessageSuffix);
-        }
-
-        private static void BeInCharacterSetInternal(
-            AssertionTracker assertionTracker,
-            Verification verification,
-            VerifiableItem verifiableItem,
-            HashSet<char> allowedCharactersHashSet,
-            string exceptionMessageSuffix)
-        {
             NotBeNullInternal(assertionTracker, verification, verifiableItem);
 
             var otherAllowedCharacters = (IReadOnlyCollection<char>)verification.VerificationParameters[0].Value;
 
             var stringValue = (string)verifiableItem.ItemValue;
 
-            bool shouldThrow;
-
-            if (otherAllowedCharacters == null)
-            {
-                shouldThrow = stringValue.Any(_ => !allowedCharactersHashSet.Contains(_));
-            }
-            else
-            {
-                allowedCharactersHashSet = new HashSet<char>(allowedCharactersHashSet);
-
-                foreach (var otherAllowedCharacter in otherAllowedCharacters)
-                {
-                    allowedCharactersHashSet.Add(otherAllowedCharacter);
-                }
-
-                shouldThrow = stringValue.Any(_ => !allowedCharactersHashSet.Contains(_));
-            }
+            var shouldThrow = !stringValue.IsAlphanumeric(otherAllowedCharacters);
 
             if (shouldThrow)
             {
-                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue);
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, BeAlphanumericExceptionMessageSuffix, Include.FailingValue);
 
                 var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
 
@@ -1113,6 +1246,58 @@ namespace OBeautifulCode.Assertion.Recipes
             if (shouldThrow)
             {
                 var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotStartWithExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.EndsWith(System.String)", Justification = "User can specify whether to verify with comparisonType or not.")]
+        private static void EndWithInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            NotBeNullInternal(assertionTracker, verification, verifiableItem);
+
+            var subjectValue = (string)verifiableItem.ItemValue;
+            var comparisonValue = (string)verification.VerificationParameters[0].Value;
+            var comparisonType = (StringComparison?)verification.VerificationParameters[1].Value;
+
+            var shouldThrow = comparisonType == null
+                ? !subjectValue.EndsWith(comparisonValue)
+                : !subjectValue.EndsWith(comparisonValue, (StringComparison)comparisonType);
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, EndWithExceptionMessageSuffix, Include.FailingValue);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Globalization", "CA1307:SpecifyStringComparison", MessageId = "System.String.EndsWith(System.String)", Justification = "User can specify whether to verify with comparisonType or not.")]
+        private static void NotEndWithInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem)
+        {
+            NotBeNullInternal(assertionTracker, verification, verifiableItem);
+
+            var subjectValue = (string)verifiableItem.ItemValue;
+            var comparisonValue = (string)verification.VerificationParameters[0].Value;
+            var comparisonType = (StringComparison?)verification.VerificationParameters[1].Value;
+
+            var shouldThrow = comparisonType == null
+                ? subjectValue.EndsWith(comparisonValue)
+                : subjectValue.EndsWith(comparisonValue, (StringComparison)comparisonType);
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, NotEndWithExceptionMessageSuffix, Include.FailingValue);
 
                 var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
 
@@ -1433,6 +1618,198 @@ namespace OBeautifulCode.Assertion.Recipes
             BeUtcDateTimeInternalInternal(assertionTracker, verification, verifiableItem, BeUtcDateTimeWhenNotNullExceptionMessageSuffix);
         }
 
+        private static void BeLessThanInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1LessThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeLessThanInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1LessThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void BeGreaterThanInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1GreaterThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeGreaterThanInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1GreaterThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void BeLessThanOrEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1GreaterThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeLessThanOrEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1GreaterThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void BeGreaterThanOrEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) == CompareOutcome.Value1LessThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeGreaterThanOrEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var shouldThrow = CompareUsingDefaultComparer(verifiableItem.ItemType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value) != CompareOutcome.Value1LessThanValue2;
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingDefaultComparerMethodology, verifiableItem.ItemType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, Include.FailingValue, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = verifiableItem.ItemIsElementInEnumerable
+                    ? ArgumentExceptionKind.ArgumentException
+                    : ArgumentExceptionKind.ArgumentOutOfRangeException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+        
         private static void BeEqualToInternalInternal(
             AssertionTracker assertionTracker,
             Verification verification,
@@ -1481,7 +1858,103 @@ namespace OBeautifulCode.Assertion.Recipes
             }
         }
 
-        private static void BeEqualToAnyOfInternalInternal(
+        private static void BeSequenceEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var elementType = verifiableItem.ItemType.GetClosedEnumerableElementType();
+
+            var shouldThrow = !AreSequenceEqual(elementType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value, verification.VerificationParameters[1].Value);
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingIsSequenceEqualToMethodology, elementType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = ArgumentExceptionKind.ArgumentException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeSequenceEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var elementType = verifiableItem.ItemType.GetClosedEnumerableElementType();
+
+            var shouldThrow = AreSequenceEqual(elementType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value, verification.VerificationParameters[1].Value);
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingIsSequenceEqualToMethodology, elementType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = ArgumentExceptionKind.ArgumentException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void BeUnorderedEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var elementType = verifiableItem.ItemType.GetClosedEnumerableElementType();
+
+            var shouldThrow = !AreUnorderedEqual(elementType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value, verification.VerificationParameters[1].Value);
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingIsUnorderedEqualToMethodology, elementType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = ArgumentExceptionKind.ArgumentException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void NotBeUnorderedEqualToInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var elementType = verifiableItem.ItemType.GetClosedEnumerableElementType();
+
+            var shouldThrow = AreUnorderedEqual(elementType, verifiableItem.ItemValue, verification.VerificationParameters[0].Value, verification.VerificationParameters[1].Value);
+
+            if (shouldThrow)
+            {
+                var methodologyInfo = string.Format(CultureInfo.InvariantCulture, UsingIsUnorderedEqualToMethodology, elementType.ToStringReadable());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, methodologyInfo: methodologyInfo);
+
+                var argumentExceptionKind = ArgumentExceptionKind.ArgumentException;
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, argumentExceptionKind);
+
+                throw exception;
+            }
+        }
+
+        private static void BeElementInInternalInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem,
@@ -1517,7 +1990,7 @@ namespace OBeautifulCode.Assertion.Recipes
             }
         }
 
-        private static void NotBeEqualToAnyOfInternalInternal(
+        private static void NotBeElementInInternalInternal(
             AssertionTracker assertionTracker,
             Verification verification,
             VerifiableItem verifiableItem,
@@ -1715,6 +2188,90 @@ namespace OBeautifulCode.Assertion.Recipes
                     break;
                 }
             }
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        private static void NotContainAnyKeyValuePairsWithNullValueInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var valueAsEnumerable = verifiableItem.ItemValue as IEnumerable;
+
+            var shouldThrow = false;
+
+            object offendingKey = null;
+
+            // ReSharper disable once PossibleNullReferenceException
+            foreach (var keyValuePair in valueAsEnumerable)
+            {
+                if (ReferenceEquals(((dynamic)keyValuePair).Value, null))
+                {
+                    shouldThrow = true;
+
+                    offendingKey = ((dynamic)keyValuePair).Key;
+
+                    break;
+                }
+            }
+
+            if (shouldThrow)
+            {
+                var contextualInfo = string.Format(CultureInfo.InvariantCulture, DictionaryKeyExampleContextualInfo, offendingKey.ToStringInErrorMessage());
+
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix, contextualInfo: contextualInfo);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unused", Justification = "Cannot iterate without a local")]
+        private static void NotBeEmptyEnumerableInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            var valueAsEnumerable = verifiableItem.ItemValue as IEnumerable;
+
+            var elementCount = GetElementCount(valueAsEnumerable);
+
+            var shouldThrow = elementCount == 0;
+
+            if (shouldThrow)
+            {
+                var exceptionMessage = BuildVerificationFailedExceptionMessage(assertionTracker, verification, verifiableItem, exceptionMessageSuffix);
+
+                var exception = BuildException(assertionTracker, verification, exceptionMessage, ArgumentExceptionKind.ArgumentException);
+
+                throw exception;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Performance", "CA1804:RemoveUnusedLocals", MessageId = "unused", Justification = "Cannot iterate without a local")]
+        private static void NotBeEmptyDictionaryInternalInternal(
+            AssertionTracker assertionTracker,
+            Verification verification,
+            VerifiableItem verifiableItem,
+            string exceptionMessageSuffix)
+        {
+            NotBeNullInternal(assertionTracker, verification, verifiableItem);
+
+            var valueAsDictionary = verifiableItem.ItemValue as IDictionary;
+
+            // ReSharper disable once PossibleNullReferenceException
+            var shouldThrow = valueAsDictionary.Count == 0;
 
             if (shouldThrow)
             {
